@@ -40,7 +40,7 @@ ENTRYOBJECTFILE = EntryPoint.o
 CSOURCEFILES = $(wildcard ../$(SOURCEDIRECTORY)/*.c)
 COBJECTFILES = $(notdir $(patsubst %.c, %.o, $(CSOURCEFILES)))
 ASSEMBLYSOURCEFILES = $(wildcard ../$(SOURCEDIRECTORY)/*.asm)
-ASSEMBLYOBJECTFILES = $(notdir $(patsubst %.c, %.o, $(ASSEMBLYSOURCEFILES)))
+ASSEMBLYOBJECTFILES = $(notdir $(patsubst %.asm, %.o, $(ASSEMBLYSOURCEFILES)))
 
 InternalDependency:
 	$(GCC64) -MM $(CSOURCEFILES) > Dependency.dep
