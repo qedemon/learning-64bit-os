@@ -3,3 +3,4 @@
 *.elf
 ImageMaker.py
 *.o
+*/Temp
