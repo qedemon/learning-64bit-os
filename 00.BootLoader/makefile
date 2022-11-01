@@ -1,3 +1,4 @@
+
 all: BootLoader.bin
 
 BootLoader.bin: BootLoader.asm
