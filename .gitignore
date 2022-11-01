@@ -1,4 +1,4 @@
 *.img
 *.bin
 ImageMaker.py
-./*/Temp/*
+./*/Temp/*.*
