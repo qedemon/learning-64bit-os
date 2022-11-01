@@ -1,7 +1,16 @@
 NASM64 = nasm -f elf64
-GCC64 = /opt/local/bin/x86_64-elf-gcc -m64 -ffreestanding
-LD64 = /opt/local/bin/x86_64-elf-ld -melf_x86_64 -T ../elf_x86_64.x -Ttext 0x200000 -e main -nostdlib
-OBJCOPY64 = /opt/local/bin/x86_64-elf-objcopy -j .text -j .data -j .rodata -j .bss -O binary
+
+UNAME_S:=$(shell uname -s)
+ifeq ($(UNAME_S), Linux)
+	GCC64 = /usr/bin/gcc -m64 -ffreestanding
+	LD64 = /usr/bin/ld -melf_x86_64 -T ../elf_x86_64.x -Ttext 0x200000 -e main -nostdlib
+	OBJCOPY64 = /usr/bin/objcopy -j .text -j .data -j .rodata -j .bss -O binary
+endif
+ifeq ($(UNAME_S), Darwin)
+	GCC64 = /opt/local/bin/x86_64-elf-gcc -m64 -ffreestanding
+	LD64 = /opt/local/bin/x86_64-elf-ld -melf_x86_64 -T ../elf_x86_64.x -Ttext 0x200000 -e main -nostdlib
+	OBJCOPY64 = /opt/local/bin/x86_64-elf-objcopy -j .text -j .data -j .rodata -j .bss -O binary
+endif
 
 OBJECTDIRECTORY = Temp
 SOURCEDIRECTORY = Source

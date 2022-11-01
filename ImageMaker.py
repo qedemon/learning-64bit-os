@@ -15,7 +15,7 @@ if len(sys.argv)<4:
     sys.exit(-1)
 
 
-sourceFile=open(sys.argv[2], 'r')
+sourceFile=open(sys.argv[2], 'rb')
 srcData=sourceFile.read()
 sourceFile.close()
 
@@ -23,12 +23,12 @@ bootLoaderData=adjustInSectorSize(srcData)
 
 print("The size of %s is adjusted from %d to %d bytes"%(sys.argv[2], len(srcData), len(bootLoaderData)))
 
-sourceFile=open(sys.argv[3], 'r')
+sourceFile=open(sys.argv[3], 'rb')
 srcData=sourceFile.read()
 sourceFile.close()
 
 Kernel32Data=adjustInSectorSize(srcData)
-Kernel32sectorCount=len(Kernel32Data)/512
+Kernel32sectorCount=int(len(Kernel32Data)/512)
 print("The size of %s is adjusted from %d to %d bytes and sector count is %d"%(sys.argv[3], len(srcData), len(Kernel32Data), Kernel32sectorCount))
 
 (sectorCountRaed,)=struct.unpack('<H',bootLoaderData[7:9])
@@ -38,11 +38,11 @@ print("The Kernel32 sector count becomes to %d from %d"%(Kernel32sectorCount, se
 
 Kernel64Data=bytearray();
 if len(sys.argv)>=5:
-    sourceFile=open(sys.argv[4], 'r')
+    sourceFile=open(sys.argv[4], 'rb')
     srcData=sourceFile.read()
     sourceFile.close()
     Kernel64Data=adjustInSectorSize(srcData)
-    Kernel64SectorCount=len(Kernel64Data)/512
+    Kernel64SectorCount=int(len(Kernel64Data)/512)
     print("The size of %s is adjusted from %d to %d bytes and sector count is %d"%(sys.argv[4], len(srcData), len(Kernel64Data), Kernel64SectorCount))
 
     totalSectorCount=Kernel32sectorCount+Kernel64SectorCount
@@ -52,7 +52,7 @@ if len(sys.argv)>=5:
     print("The Total sector count becomes to %d from %d"%(totalSectorCount, sectorCountRaed))    
 
 
-targetFile=open(sys.argv[1], 'w')
+targetFile=open(sys.argv[1], 'wb')
 targetFile.write(bytes(bootLoaderData+Kernel32Data+Kernel64Data))
 targetFile.close()
 

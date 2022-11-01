@@ -1,7 +1,15 @@
 ASSEMBLER = nasm
-GCC32 = /opt/local/bin/i386-elf-gcc -m32 -ffreestanding
-LD32 = /opt/local/bin/i386-elf-ld -e main -melf_i386 -Ttext 0x10200 -nostdlib
-OBJCOPY32 = /opt/local/bin/i386-elf-objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
+UNAME_S:=$(shell uname -s)
+ifeq ($(UNAME_S), Linux)
+	GCC32 = /usr/bin/gcc -m32 -ffreestanding
+	LD32 = /usr/bin/ld -e main -melf_i386 -Ttext 0x10200 -nostdlib
+	OBJCOPY32 = /usr/bin/objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
+endif
+ifeq ($(UNAME_S), Darwin)
+	GCC32 = /opt/local/bin/i386-elf-gcc -m32 -ffreestanding
+	LD32 = /opt/local/bin/i386-elf-ld -e main -melf_i386 -Ttext 0x10200 -nostdlib
+	OBJCOPY32 = /opt/local/bin/i386-elf-objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
+endif
 OBJECTDIRECTORY = Temp
 SOURCEDIRECTORY = Source
 
