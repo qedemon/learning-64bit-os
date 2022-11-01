@@ -1,0 +1,6 @@
+*.img
+*.bin
+*.elf
+ImageMaker.py
+*.o
+*/Temp
