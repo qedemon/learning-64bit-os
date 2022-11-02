@@ -30,6 +30,7 @@ executeInternalBuild: dep
 
 Kernel64.bin: executeInternalBuild
 	$(OBJCOPY64) $(OBJECTDIRECTORY)/Kernel64.elf $@
+	ndisasm -b64 $@ > $@.asm
 
 clean:
 	rm -rf $(OBJECTDIRECTORY)

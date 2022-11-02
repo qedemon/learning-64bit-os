@@ -4,3 +4,4 @@
 ImageMaker.py
 *.o
 */Temp
+*.bin.asm

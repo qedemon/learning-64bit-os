@@ -37,6 +37,7 @@ $(OBJECTDIRECTORY)/Kernel32.elf.bin: executeInternalBuild
 
 Kernel32.bin: $(OBJECTDIRECTORY)/EntryPoint.bin $(OBJECTDIRECTORY)/Kernel32.elf.bin
 	cat $^ > $@ 
+	ndisasm -b32 $@ > $@.asm
 
 clean:
 	rm -rf $(OBJECTDIRECTORY)
