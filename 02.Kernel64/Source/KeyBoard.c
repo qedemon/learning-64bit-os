@@ -90,7 +90,6 @@ static KEYMAPPINGENTRY gs_stKeyMappingTable[KEYMAPPINGTABLEMAXCOUNT] = {
     {'-', '_'},             //0x0C
     {'=', '+'},             //0x0D
     {KEY_BS, KEY_SPACE},    //0x0E
-    {'\t', '\t'},           //0x0F
     {'q', 'Q'},             //0x10
     {'w', 'W'},             //0x11
     {'e', 'E'},             //0x12
@@ -117,7 +116,6 @@ static KEYMAPPINGENTRY gs_stKeyMappingTable[KEYMAPPINGTABLEMAXCOUNT] = {
     {';', ':'},             //0x27
     {'\'', '\"'},             //0x28
     {'`', '~'},             //0x29
-    {KEY_LSHIFT, KEY_LSHIFT},             //0x2A
     {'\\', '|'},             //0x2B       
     {'z', 'Z'},             //0x2C
     {'x', 'X'},             //0x2D
