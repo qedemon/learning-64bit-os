@@ -8,6 +8,7 @@
 #define KEY_ESC 0x1B
 #define KEY_BS 0x08
 #define KEY_SPACE 0x20
+<<<<<<< HEAD
 
 #define KEY_LCTRL 0x81
 #define KEY_LSHIFT 0x82
@@ -48,6 +49,13 @@
 #define KEY_PGDOWN 0xA0
 
 #define KYE_PAUSE 0xA1
+=======
+#define KEY_CTRL 0x81
+#define KEY_SHIFT 0x82
+#define KEY_PTSCR 0x83
+#define KEY_ALT 0x84
+#define KEY_CPASLOCK 0x85
+>>>>>>> e49422b460fd20b0e28cd4a48cf0f5d9a6ca2610
 
 typedef struct kKeyMappingEntryStruct{
     BYTE bNarmalCode;
