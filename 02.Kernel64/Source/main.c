@@ -20,7 +20,7 @@ void main(){
     if(!kUpdateKeyboardLeds()){
         while(1);
     }
-    
+
     while(1){
         if(kIsOutputBufferFull()){
             char str[2]={0,};
