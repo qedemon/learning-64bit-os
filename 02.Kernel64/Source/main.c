@@ -5,8 +5,7 @@
 void kPrintString(int iX, int iY, const char* pcString);
 
 void main(){
-    int i;
-    BOOL a[4]={TRUE, FALSE, FALSE, FALSE};
+    int i=0;
     kPrintString(0, 10, "Switch to IA-32e Mode Success~!!");
     kPrintString(0, 11, "IA-32e C Language Kernel Start..............[Pass]");
     kPrintString(0, 11, "Activate Keyboard...........................[Pass]");
@@ -18,17 +17,23 @@ void main(){
         while(1);
     }
 
-    i=0;
+    if(!kUpdateKeyboardLeds()){
+        while(1);
+    }
+    kPrintString(0, 12, "KeyBoard Update");
     while(1){
         if(kIsOutputBufferFull()){
-            BYTE keyCode = kInPortByte((WORD)0x60);
-            kChangeKeyboardLeds(a[0], a[1], a[2]);
-            kPrintString(i, 12, "A");
-            i++;
-            a[3]=a[2];
-            a[2]=a[1];
-            a[1]=a[0];
-            a[0]=a[3];
+            char str[2]={0,};
+            BYTE scanCode;
+            BOOL updateTerminal;
+            BYTE terminalKey;
+            scanCode=kGetKeyBoardScanCode();
+            updateTerminal=kUpdateKeyBoardManager(scanCode, &terminalKey);
+            if(updateTerminal){
+                str[0]=terminalKey;
+                kPrintString(i, 13, str);
+                i++;
+            }
         }
     }
 }
