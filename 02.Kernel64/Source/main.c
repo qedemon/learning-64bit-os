@@ -26,6 +26,7 @@ void main(){
             char str[2]={0,};
             BYTE scanCode;
             BOOL updateTerminal;
+            
             BYTE terminalKey;
             scanCode=kGetKeyBoardScanCode();
             updateTerminal=kUpdateKeyBoardManager(scanCode, &terminalKey);
