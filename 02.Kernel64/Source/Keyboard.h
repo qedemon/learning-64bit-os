@@ -31,29 +31,29 @@
 #define KEY_F12 0x93
 
 #define KEY_CAPSLOCK 0x94
-#define KEY_NUMLOCK 0x94
-#define KEY_SCROLL_LOCK 0x95
+#define KEY_NUMLOCK 0x95
+#define KEY_SCROLL_LOCK 0x96
 
-#define KEY_UP  0x96
-#define KEY_DOWN 0x97
-#define KEY_LEFT 0x98
-#define KEY_RIGHT 0x99
-#define KEY_CENTER 0x9A
+#define KEY_UP  0x97
+#define KEY_DOWN 0x98
+#define KEY_LEFT 0x99
+#define KEY_RIGHT 0x9A
+#define KEY_CENTER 0x9B
 
-#define KEY_INSERT 0x9B
-#define KEY_DELETE 0x9C
-#define KEY_HOME 0x9D
-#define KEY_END 0x9E
-#define KEY_PGUP 0x9F
-#define KEY_PGDOWN 0xA0
+#define KEY_INSERT 0x9C
+#define KEY_DELETE 0x9D
+#define KEY_HOME 0x9E
+#define KEY_END 0x9F
+#define KEY_PGUP 0xA0
+#define KEY_PGDOWN 0xA1
 
-#define KEY_PAUSE 0xA1
+#define KEY_PAUSE 0xA2
 
 #define KEYCODE_EXTENDED 0xE0
 #define KEYCODE_PAUSE 0xE1
 
 typedef struct kKeyMappingEntryStruct{
-    BYTE bNarmalCode;
+    BYTE bNormalCode;
     BYTE bShiftedCode;
 }KEYMAPPINGENTRY;
 #define KEYMAPPINGTABLEMAXCOUNT 0x59
@@ -70,6 +70,10 @@ typedef struct kKeyBoradManagerStruct{
 
 BOOL kIsInputBufferFull();
 BOOL kIsOutputBufferFull();
+
+BOOL kIsKeyInAlphabet(BYTE keyCode);
+BOOL kIsKeyInNuberOrSp(BYTE keyCode);
+BOOL kIsKeyInNumberPad(BYTE keyCode);
 
 BYTE kGetKeyBoardScanCode();
 

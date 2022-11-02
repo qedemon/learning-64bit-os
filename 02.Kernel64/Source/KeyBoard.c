@@ -90,6 +90,7 @@ static KEYMAPPINGENTRY gs_stKeyMappingTable[KEYMAPPINGTABLEMAXCOUNT] = {
     {'-', '_'},             //0x0C
     {'=', '+'},             //0x0D
     {KEY_BS, KEY_SPACE},    //0x0E
+    {'\t', '\t'},            //0x0F
     {'q', 'Q'},             //0x10
     {'w', 'W'},             //0x11
     {'e', 'E'},             //0x12
@@ -102,8 +103,8 @@ static KEYMAPPINGENTRY gs_stKeyMappingTable[KEYMAPPINGTABLEMAXCOUNT] = {
     {'p', 'P'},             //0x19
     {'[', '{'},             //0x1A
     {']', '}'},             //0x1B
-    {KEY_ENTER, KEY_ENTER},//0x1C
-    {KEY_LCTRL, KEY_RCTRL},//0x1D
+    {KEY_ENTER, KEY_ENTER}, //0x1C
+    {KEY_LCTRL, KEY_RCTRL}, //0x1D
     {'a', 'A'},             //0x1E
     {'s', 'S'},             //0x1F
     {'d', 'D'},             //0x20
@@ -116,6 +117,7 @@ static KEYMAPPINGENTRY gs_stKeyMappingTable[KEYMAPPINGTABLEMAXCOUNT] = {
     {';', ':'},             //0x27
     {'\'', '\"'},             //0x28
     {'`', '~'},             //0x29
+    {KEY_LSHIFT, KEY_LSHIFT},   //0x2A
     {'\\', '|'},             //0x2B       
     {'z', 'Z'},             //0x2C
     {'x', 'X'},             //0x2D
@@ -128,7 +130,7 @@ static KEYMAPPINGENTRY gs_stKeyMappingTable[KEYMAPPINGTABLEMAXCOUNT] = {
     {'.', '>'},             //0x34
     {'/', '?'},             //0x35
     {KEY_RSHIFT, KEY_RSHIFT}, //0x36
-    {KEY_PTSCR, KEY_PTSCR}, //0x37
+    {'*', KEY_PTSCR}, //0x37
     {KEY_LALT, KEY_RALT},     //0x38
     {KEY_SPACE, KEY_SPACE}, //0x39
     {KEY_CAPSLOCK, KEY_CAPSLOCK},   //0x3A
@@ -161,7 +163,7 @@ static KEYMAPPINGENTRY gs_stKeyMappingTable[KEYMAPPINGTABLEMAXCOUNT] = {
     {KEY_NONE, KEY_NONE},   //0x55
     {KEY_NONE, KEY_NONE},   //0x56
     {KEY_F11, KEY_F11},     //0x57
-    {KEY_F12, KEY_F12},     //0x58
+    {KEY_F12, KEY_F12}    //0x58
 };
 
 static KEYBOARDMANAGER gs_KeyBoardManager={0,
@@ -170,7 +172,7 @@ static KEYBOARDMANAGER gs_KeyBoardManager={0,
 BYTE kGetKeyBoardScanCode(){
     int i;
     for(i=0; i<0xff; i++){
-        if(kIsOutputBufferFull)
+        if(kIsOutputBufferFull())
            break;
     }
     return kInPortByte(0x60);
@@ -183,6 +185,11 @@ BOOL kUpdateKeyboardLeds(){
 BOOL kUpdateKeyBoardManager(BYTE bScanCode, BYTE* pbOutputKeyCode){
     BOOL isUpCode;
     BYTE keyCode;
+    BOOL extended;
+    KEYMAPPINGENTRY keyMappingEntry;
+
+    extended=gs_KeyBoardManager.bExtendedCodeIn;
+    gs_KeyBoardManager.bExtendedCodeIn=FALSE;
 
     if(gs_KeyBoardManager.iSkipCountForPause>0){
         gs_KeyBoardManager.iSkipCountForPause--;
@@ -198,22 +205,66 @@ BOOL kUpdateKeyBoardManager(BYTE bScanCode, BYTE* pbOutputKeyCode){
     }
 
     isUpCode=((bScanCode&0x80)==0)?FALSE:TRUE;
-    keyCode=bScanCode&(~0x80);
+    keyCode=bScanCode&(0x7F);
+    keyMappingEntry=gs_stKeyMappingTable[keyCode];
 
     if(!isUpCode){
-        switch(gs_stKeyMappingTable[keyCode].bNarmalCode){
-            default:
-                break;
+        switch(keyMappingEntry.bNormalCode){
             case KEY_NUMLOCK:
                 gs_KeyBoardManager.bNumLockOn=!gs_KeyBoardManager.bNumLockOn;
+                kUpdateKeyboardLeds();
+                return FALSE;
+                break;
             case KEY_CAPSLOCK:
                 gs_KeyBoardManager.bCapsLockOn=!gs_KeyBoardManager.bCapsLockOn;
+                kUpdateKeyboardLeds();
+                return FALSE;
+                break;
             case KEY_SCROLL_LOCK:
                 gs_KeyBoardManager.bScrollLockOn=!gs_KeyBoardManager.bScrollLockOn;
                 kUpdateKeyboardLeds();
                 return FALSE;
+                break;
+            default:
+                break;
+        }
+        
+        if(keyMappingEntry.bNormalCode==KEY_LSHIFT||keyMappingEntry.bNormalCode==KEY_RSHIFT){
+            gs_KeyBoardManager.bShiftDown=TRUE;
+            return FALSE;
+        }
+
+        if(kIsKeyInAlphabet(keyCode)){
+            *pbOutputKeyCode=(gs_KeyBoardManager.bShiftDown^gs_KeyBoardManager.bCapsLockOn)?keyMappingEntry.bShiftedCode:keyMappingEntry.bNormalCode;
+            return TRUE;
+        }
+        if(kIsKeyInNuberOrSp(keyCode)){
+            *pbOutputKeyCode=(gs_KeyBoardManager.bShiftDown)?keyMappingEntry.bShiftedCode:keyMappingEntry.bNormalCode;
+            return TRUE;
+        }
+        if(kIsKeyInNumberPad(keyCode)&&!extended){
+            if(gs_KeyBoardManager.bNumLockOn){
+                *pbOutputKeyCode=keyMappingEntry.bShiftedCode;
+                return TRUE;
+            }
+        }
+    }
+    else{
+        if(keyMappingEntry.bNormalCode==KEY_LSHIFT||keyMappingEntry.bNormalCode==KEY_RSHIFT){
+            gs_KeyBoardManager.bShiftDown=FALSE;
         }
     }
 
+
     return FALSE;
+}
+
+BOOL kIsKeyInAlphabet(BYTE keyCode){
+    return (('a'<= gs_stKeyMappingTable[keyCode].bNormalCode)&&('z'>= gs_stKeyMappingTable[keyCode].bNormalCode));
+}
+BOOL kIsKeyInNuberOrSp(BYTE keyCode){
+    return ((2<=gs_stKeyMappingTable[keyCode].bNormalCode)&&(53>=gs_stKeyMappingTable[keyCode].bNormalCode)&&(!kIsKeyInAlphabet(keyCode)));
+}
+BOOL kIsKeyInNumberPad(BYTE keyCode){
+    return ((keyCode>=0x47)&&(keyCode<=0x53));
 }
