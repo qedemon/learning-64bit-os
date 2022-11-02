@@ -1,5 +1,6 @@
 #include "Type.h"
 #include "Keyboard.h"
+#include "AssemblyUtility.h"
 
 void kPrintString(int iX, int iY, const char* pcString);
 
@@ -20,7 +21,7 @@ void main(){
     i=0;
     while(1){
         if(kIsOutputBufferFull()){
-            kInPortByte(0x60);
+            BYTE keyCode = kInPortByte((WORD)0x60);
             kChangeKeyboardLeds(a[0], a[1], a[2]);
             kPrintString(i, 12, "A");
             i++;
