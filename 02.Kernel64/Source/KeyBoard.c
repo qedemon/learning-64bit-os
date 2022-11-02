@@ -163,3 +163,57 @@ static KEYMAPPINGENTRY gs_stKeyMappingTable[KEYMAPPINGTABLEMAXCOUNT] = {
     {KEY_F11, KEY_F11},     //0x57
     {KEY_F12, KEY_F12},     //0x58
 };
+
+static KEYBOARDMANAGER gs_KeyBoardManager={0,
+};
+
+BYTE kGetKeyBoardScanCode(){
+    int i;
+    for(i=0; i<0xff; i++){
+        if(kIsOutputBufferFull)
+           break;
+    }
+    return kInPortByte(0x60);
+}
+
+BOOL kUpdateKeyboardLeds(){
+    return kChangeKeyboardLeds(gs_KeyBoardManager.bCapsLockOn, gs_KeyBoardManager.bNumLockOn, gs_KeyBoardManager.bScrollLockOn);
+}
+
+BOOL kUpdateKeyBoardManager(BYTE bScanCode, BYTE* pbOutputKeyCode){
+    BOOL isUpCode;
+    BYTE keyCode;
+
+    if(gs_KeyBoardManager.iSkipCountForPause>0){
+        gs_KeyBoardManager.iSkipCountForPause--;
+        return FALSE;
+    }
+    if(bScanCode==KEYCODE_PAUSE){
+        gs_KeyBoardManager.iSkipCountForPause=2;
+        return FALSE;
+    }
+    if(bScanCode==KEYCODE_EXTENDED){
+        gs_KeyBoardManager.bExtendedCodeIn=TRUE;
+        return FALSE;
+    }
+
+    isUpCode=((bScanCode&0x80)==0)?FALSE:TRUE;
+    keyCode=bScanCode&(~0x80);
+
+    if(!isUpCode){
+        switch(gs_stKeyMappingTable[keyCode].bNarmalCode){
+            default:
+                break;
+            case KEY_NUMLOCK:
+                gs_KeyBoardManager.bNumLockOn=!gs_KeyBoardManager.bNumLockOn;
+            case KEY_CAPSLOCK:
+                gs_KeyBoardManager.bCapsLockOn=!gs_KeyBoardManager.bCapsLockOn;
+            case KEY_SCROLL_LOCK:
+                gs_KeyBoardManager.bScrollLockOn=!gs_KeyBoardManager.bScrollLockOn;
+                kUpdateKeyboardLeds();
+                return FALSE;
+        }
+    }
+
+    return FALSE;
+}

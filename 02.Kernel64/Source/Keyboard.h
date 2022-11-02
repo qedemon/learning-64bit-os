@@ -47,7 +47,10 @@
 #define KEY_PGUP 0x9F
 #define KEY_PGDOWN 0xA0
 
-#define KYE_PAUSE 0xA1
+#define KEY_PAUSE 0xA1
+
+#define KEYCODE_EXTENDED 0xE0
+#define KEYCODE_PAUSE 0xE1
 
 typedef struct kKeyMappingEntryStruct{
     BYTE bNarmalCode;
@@ -55,10 +58,24 @@ typedef struct kKeyMappingEntryStruct{
 }KEYMAPPINGENTRY;
 #define KEYMAPPINGTABLEMAXCOUNT 0x59
 
+typedef struct kKeyBoradManagerStruct{
+    BOOL bShiftDown;
+    BOOL bCapsLockOn;
+    BOOL bNumLockOn;
+    BOOL bScrollLockOn;
+
+    BOOL bExtendedCodeIn;
+    int iSkipCountForPause;
+}KEYBOARDMANAGER;
+
 BOOL kIsInputBufferFull();
 BOOL kIsOutputBufferFull();
 
+BYTE kGetKeyBoardScanCode();
+
 BOOL kActivateKeyBoard();
 BOOL kChangeKeyboardLeds(BOOL bCapsLockOn, BOOL bNumLockOn, BOOL bScrollLockOn);
+BOOL kUpdateKeyboardLeds();
+BOOL kUpdateKeyBoardManager(BYTE bScanCode, BYTE* pbOutputKeyCode);
 
 #endif
