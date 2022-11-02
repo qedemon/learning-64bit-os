@@ -1,9 +1,12 @@
 #include "Type.h"
 #include "Keyboard.h"
+#include "AssemblyUtility.h"
 
 void kPrintString(int iX, int iY, const char* pcString);
 
 void main(){
+    int i;
+    BOOL a[4]={TRUE, FALSE, FALSE, FALSE};
     kPrintString(0, 10, "Switch to IA-32e Mode Success~!!");
     kPrintString(0, 11, "IA-32e C Language Kernel Start..............[Pass]");
     kPrintString(0, 11, "Activate Keyboard...........................[Pass]");
@@ -14,7 +17,20 @@ void main(){
         kPrintString(45, 11, "Fail");
         while(1);
     }
-    while(1);
+
+    i=0;
+    while(1){
+        if(kIsOutputBufferFull()){
+            BYTE keyCode = kInPortByte((WORD)0x60);
+            kChangeKeyboardLeds(a[0], a[1], a[2]);
+            kPrintString(i, 12, "A");
+            i++;
+            a[3]=a[2];
+            a[2]=a[1];
+            a[1]=a[0];
+            a[0]=a[3];
+        }
+    }
 }
 
 void kPrintString(int iX, int iY, const char* pcString){
