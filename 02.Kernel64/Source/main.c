@@ -1,5 +1,6 @@
 #include "Type.h"
 #include "Keyboard.h"
+#include "TextModeTerminal.h"
 #include "AssemblyUtility.h"
 
 void kPrintString(int iX, int iY, const char* pcString);
@@ -21,6 +22,9 @@ void main(){
         while(1);
     }
 
+    kClearTerminal(0x0A, FALSE);
+    kMoveCursorPos(0, 12);
+    
     while(1){
         if(kIsOutputBufferFull()){
             char str[2]={0,};
@@ -30,11 +34,8 @@ void main(){
             BYTE terminalKey;
             scanCode=kGetKeyBoardScanCode();
             updateTerminal=kUpdateKeyBoardManager(scanCode, &terminalKey);
-            if(updateTerminal){
-                str[0]=terminalKey;
-                kPrintString(i, 13, str);
-                i++;
-            }
+            if(updateTerminal)
+                kDataIntoTerminal(terminalKey);
         }
     }
 }

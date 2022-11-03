@@ -263,7 +263,7 @@ BOOL kIsKeyInAlphabet(BYTE keyCode){
     return (('a'<= gs_stKeyMappingTable[keyCode].bNormalCode)&&('z'>= gs_stKeyMappingTable[keyCode].bNormalCode));
 }
 BOOL kIsKeyInNuberOrSp(BYTE keyCode){
-    return ((2<=gs_stKeyMappingTable[keyCode].bNormalCode)&&(53>=gs_stKeyMappingTable[keyCode].bNormalCode)&&(!kIsKeyInAlphabet(keyCode)));
+    return ((2<=gs_stKeyMappingTable[keyCode].bNormalCode)&&(126>=gs_stKeyMappingTable[keyCode].bNormalCode)&&(!kIsKeyInAlphabet(keyCode)));
 }
 BOOL kIsKeyInNumberPad(BYTE keyCode){
     return ((keyCode>=0x47)&&(keyCode<=0x53));
