@@ -3,6 +3,6 @@
 #include "Type.h"
 
 BYTE kInPortByte(WORD wPort);
-void kOutPortByte(WORD wPart, BYTE bData);
+void kOutPortByte(WORD wPort, BYTE bData);
 
 #endif
