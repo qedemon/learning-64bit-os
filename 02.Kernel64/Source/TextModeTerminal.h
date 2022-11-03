@@ -1,0 +1,4 @@
+#ifndef TEXTMODETERMINAL_H
+#define TEXTMODETERMINAL_H
+
+#endif
