@@ -5,3 +5,5 @@ ImageMaker.py
 *.o
 */Temp
 *.bin.asm
+.vscode/tasks.json
+.vscode/c_cpp_properties.json
