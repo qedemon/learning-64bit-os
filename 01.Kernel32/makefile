@@ -1,4 +1,5 @@
-ASSEMBLER = nasm
+NASM = nasm
+NDISASM = ndisasm
 UNAME_S:=$(shell uname -s)
 ifeq ($(UNAME_S), Linux)
 	GCC32 = /usr/bin/gcc -m32 -ffreestanding
@@ -10,19 +11,23 @@ ifeq ($(UNAME_S), Darwin)
 	LD32 = /opt/local/bin/i386-elf-ld -e main -melf_i386 -Ttext 0x10200 -nostdlib
 	OBJCOPY32 = /opt/local/bin/i386-elf-objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
 endif
+
 OBJECTDIRECTORY = Temp
 SOURCEDIRECTORY = Source
 
 all: prepare Kernel32.bin
 
+test:
+	$(LD32) -V
+
 prepare:
 	mkdir -p $(OBJECTDIRECTORY)
 
 $(OBJECTDIRECTORY)/EntryPoint.bin: $(SOURCEDIRECTORY)/EntryPoint.s
-	$(ASSEMBLER) -o $@ $<
+	$(NASM) -o $@ $<
 
 VirtualOS.bin: VirtualOS.asm
-	$(ASSEMBLER) -o $@ $<
+	$(NASM) -o $@ $<
 
 dep:
 	@echo === Make Dependency File ===
@@ -37,7 +42,7 @@ $(OBJECTDIRECTORY)/Kernel32.elf.bin: executeInternalBuild
 
 Kernel32.bin: $(OBJECTDIRECTORY)/EntryPoint.bin $(OBJECTDIRECTORY)/Kernel32.elf.bin
 	cat $^ > $@ 
-	ndisasm -b32 $@ > $@.asm
+	$(NDISASM) -b32 $@ > $@.asm
 
 clean:
 	rm -rf $(OBJECTDIRECTORY)
@@ -57,7 +62,7 @@ InternalDependency: $(CSOURCEFILES)
 	$(GCC32) -c $<
 
 %.o: ../$(SOURCEDIRECTORY)/%.asm
-	$(ASSEMBLER) -f elf32 -o $@ $<
+	$(NASM) -f elf32 -o $@ $<
 
 Kernel32.elf: $(CENTRYPOINTOBJECTFILE) $(COBJECTFILES) $(ASSEMBLYOBJECTFILES)
 	$(LD32) -o $@ $^
