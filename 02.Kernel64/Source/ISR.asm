@@ -225,92 +225,92 @@ kISRKeyboard:
 kISRSlavePIC:
     KSAVECONTEXT
     mov rdi, 34
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRSerial2:
     KSAVECONTEXT
     mov rdi, 35
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRSerial1:
     KSAVECONTEXT
     mov rdi, 36
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRParallel2:
     KSAVECONTEXT
     mov rdi, 37
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRFloppy:
     KSAVECONTEXT
     mov rdi, 38
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRParallel1:
     KSAVECONTEXT
     mov rdi, 39
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRRTC:
     KSAVECONTEXT
     mov rdi, 40
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 
 kISRReserved:
     KSAVECONTEXT
     mov rdi, 41
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRNotUsed1:
     KSAVECONTEXT
     mov rdi, 42
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRNotUsed2:
     KSAVECONTEXT
     mov rdi, 43
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRMouse:
     KSAVECONTEXT
     mov rdi, 44
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRCoprocessor:
     KSAVECONTEXT
     mov rdi, 45
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRHDD1:
     KSAVECONTEXT
     mov rdi, 46
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRHDD2:
     KSAVECONTEXT
     mov rdi, 47
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 kISRETCInterrupt:
     KSAVECONTEXT
     mov rdi, 48
-    call kKeyboardInterruptHandler
+    call kCommonInterruptHandler
     KLOADCONTEXT
     iretq
 
