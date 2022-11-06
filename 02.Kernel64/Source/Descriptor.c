@@ -75,5 +75,8 @@ void kSetIDTEntry(IDTENTRY* pstEntry, void* pvHandler, WORD wSegmentSelector, BY
 }
 
 void dummyHandler(){
-
+    kPrintString(0, 0, "=======================================");
+    kPrintString(0, 1, "Dummy Interrupt Handler Execute!!");
+    kPrintString(0, 2, "=======================================");
+    while(1);
 }
