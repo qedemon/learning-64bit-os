@@ -4,6 +4,7 @@
 #include "Keyboard.h"
 #include "TextModeTerminal.h"
 #include "Descriptor.h"
+#include "PIC.h"
 
 void main(){
     int i=0;
@@ -20,12 +21,19 @@ void main(){
     kLoadIDTR((QWORD) IDTR_STARTADDRESS);
     kPrintString(45, 13, "Pass");
 
-    kPrintString(0, 11, "Activate Keyboard...........................[Pass]");
+    kPrintString(0, 14, "Start Interrupt.............................[    ]");
+    kInitializePIC();
+    kMaskPICInterrupt(0);
+    kEnableInterrupt();
+    kPrintString(45, 14, "Pass");
+    
+
+    kPrintString(0, 15, "Activate Keyboard...........................[Pass]");
     if(kActivateKeyBoard()){
-        kPrintString(45, 11, "Pass");
+        kPrintString(45, 15, "Pass");
     }
     else{
-        kPrintString(45, 11, "Fail");
+        kPrintString(45, 15, "Fail");
         while(1);
     }
 
@@ -34,7 +42,7 @@ void main(){
     }
 
     kClearTerminal(0x0A, FALSE);
-    kMoveCursorPos(0, 14);
+    kMoveCursorPos(0, 15);
     
     while(1){
         if(kIsOutputBufferFull()){

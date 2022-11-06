@@ -8,4 +8,8 @@ void kLoadGDTR(QWORD qwGDTRAddress);
 void kLoadTSSR(WORD wSegmentOffset);
 void kLoadIDTR(QWORD qwIDTRAddress);
 
+void kEnableInterrupt();
+void kDisableInterrupt();
+QWORD kReadRFLAGS(void);
+
 #endif
