@@ -1,9 +1,9 @@
 #include "Type.h"
+#include "AssemblyUtility.h"
+#include "Utility.h"
 #include "Keyboard.h"
 #include "TextModeTerminal.h"
-#include "AssemblyUtility.h"
-
-void kPrintString(int iX, int iY, const char* pcString);
+#include "Descriptor.h"
 
 void main(){
     int i=0;
@@ -17,6 +17,10 @@ void main(){
         kPrintString(45, 11, "Fail");
         while(1);
     }
+
+    kPrintString(0, 12, "GDT Initialize And Switch for IA-32e Mode....[    ]");
+    kInitializeGDTTableAndTSS();    
+    kLoadGDTR((QWORD) GDTR_STARTADDRESS);
 
     if(!kUpdateKeyboardLeds()){
         while(1);
@@ -37,15 +41,5 @@ void main(){
             if(updateTerminal)
                 kDataIntoTerminal(terminalKey);
         }
-    }
-}
-
-void kPrintString(int iX, int iY, const char* pcString){
-    kCharStruct* pstString=(kCharStruct*) 0xB8000;
-    int i;
-
-    pstString+=(iY*80)+iX;
-    for(i=0; pcString[i]!=0; i++){
-        pstString[i].bChar=pcString[i];
     }
 }

@@ -1,5 +1,5 @@
-#include "Keyboard.h"
 #include "AssemblyUtility.h"
+#include "Keyboard.h"
 
 BOOL kIsInputBufferFull(){
     return (kInPortByte(0x64)&0x02!=0);
