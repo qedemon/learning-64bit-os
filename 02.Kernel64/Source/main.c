@@ -44,7 +44,7 @@ void main(){
     }
 
     kClearTerminal(TERMINAL_DEFAULT_COLOR, FALSE);
-    kMoveCursorPos(0, 15);
+    kMoveCursorPos(0, 16);
     
     while(1){
         if(kGetKeyFromKeyQueue(&stKeyData)){    
