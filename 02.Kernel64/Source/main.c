@@ -42,7 +42,7 @@ void main(){
         while(1);
     }
 
-    kClearTerminal(0x0A, FALSE);
+    kClearTerminal(TERMINAL_DEFAULT_COLOR, FALSE);
     kMoveCursorPos(0, 15);
     
     while(1){
