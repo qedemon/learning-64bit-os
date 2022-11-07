@@ -1,11 +1,14 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 #include "Type.h"
+#include <stdarg.h>
 
 void kPrintString(int iX, int iY, const char* pcString);
 void kMemSet(void* pDest, BYTE bData, int iSize);
 int kMemCpy(void* pDest, const void* pSrc, int iSize);
 
 BOOL kSetInterruptFlag(BOOL bEnableInterrupt);
+
+int kVSPrintf(const char* pcBuffer, const char* pcFormatString, va_list ap);
 
 #endif

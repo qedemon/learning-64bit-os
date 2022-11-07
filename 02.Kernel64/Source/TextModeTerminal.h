@@ -43,4 +43,6 @@ void kMoveCursorPos(WORD iCursorX, WORD iCursorY);
 void kUpdateCursorPos();
 void kDataIntoTerminal(BYTE keyCode);
 
+void kPrintf(const char* pcFormatString, ...);
+
 #endif

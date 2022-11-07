@@ -43,3 +43,7 @@ void kUpdateCursorPos(){
     kOutPortByte(VGA_PORT_INDEX, VGA_INDEX_UPPERCURSOR);
     kOutPortByte(VGA_PORT_DATA, pos>>8);
 }
+
+void kPrintf(const char* pcFormatString, ...){
+    
+}
