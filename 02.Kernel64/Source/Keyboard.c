@@ -275,27 +275,7 @@ BOOL kIsKeyInNumberPad(BYTE keyCode){
     return ((keyCode>=0x47)&&(keyCode<=0x53));
 }
 
-BOOL kInitializeKeyBoard(){
+void kInitializeKeyBoard(){
     kInitializeQueue(&gs_stKeyQueue, gs_vstKeyQueueBuffer, KEY_MAXQUEUECOUNT, sizeof(KEYDATA));
     return kActivateKeyBoard();
-}
-
-BOOL kUpdateKeyBoardManagerAndPutKeyDatatToQueue(BYTE bScanCode){
-    BYTE terminalKey;
-    KEYDATA keyData;
-    if(kUpdateKeyBoardManager(bScanCode, &terminalKey)){
-        keyData.bScanCode=bScanCode;
-        keyData.bASCIICode=terminalKey;
-        keyData.bFlags=0;
-        return kPutDataToQueue(&gs_stKeyQueue, &keyData);
-    }
-    return FALSE;
-}
-
-
-BOOL kGetKeyFromKeyQueue(KEYDATA* pstOutput){
-    if(kIsQueueEmpty(&gs_stKeyQueue)){
-        return FALSE;
-    }
-    return kGetDataFromQueue(&gs_stKeyQueue, pstOutput);
 }

@@ -68,6 +68,12 @@ typedef struct kKeyBoradManagerStruct{
     int iSkipCountForPause;
 }KEYBOARDMANAGER;
 
+typedef struct kKeyDataStruct{
+    BYTE bScanCode;
+    BYTE bASCIICode;
+    BYTE bFlags;
+}KEYDATA;
+
 BOOL kIsInputBufferFull();
 BOOL kIsOutputBufferFull();
 
@@ -81,5 +87,9 @@ BOOL kActivateKeyBoard();
 BOOL kChangeKeyboardLeds(BOOL bCapsLockOn, BOOL bNumLockOn, BOOL bScrollLockOn);
 BOOL kUpdateKeyboardLeds();
 BOOL kUpdateKeyBoardManager(BYTE bScanCode, BYTE* pbOutputKeyCode);
+
+BOOL kInitializeKeyBoard();
+BOOL kUpdateKeyBoardManagerAndPutKeyDatatToQueue(BYTE bScanCode);
+BOOL kGetKeyFromKeyQueue(KEYDATA* pstOutput);
 
 #endif

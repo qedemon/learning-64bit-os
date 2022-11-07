@@ -18,7 +18,7 @@ BOOL kIsQueueEmpty(const QUEUE* pstQueue){
 }
 
 
-BOOL kPutData(QUEUE* pstQueue, const void* pvData){
+BOOL kPutDataToQueue(QUEUE* pstQueue, const void* pvData){
     if(kIsQueueFull(pstQueue)){
         return FALSE;
     }
@@ -27,7 +27,7 @@ BOOL kPutData(QUEUE* pstQueue, const void* pvData){
     pstQueue->bLastOperationPut=TRUE;
     return TRUE;
 }
-BOOL kGetData(QUEUE* pstQueue, void* pvData){
+BOOL kGetDataFromQueueu(QUEUE* pstQueue, void* pvData){
     if(kIsQueueEmpty(pstQueue)){
         return FALSE;
     }
