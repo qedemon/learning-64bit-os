@@ -41,6 +41,13 @@ typedef struct kTextTerminalManager{
     BYTE bAttrib;
 }TERMINALMANAGER;
 
+typedef void(*TERMINALCOMMANDFUNCTION)(const char* pcArgument);
+typedef struct kTerminalCommandEntryStructure{
+    char* pcCommand;
+    char* pcHelp;
+    TERMINALCOMMANDFUNCTION pfFunction;
+}TERMINALCOMMANDENTRY;
+
 void kTerminalClear(BYTE attrib, BOOL bClearChar);
 void kTerminalSetCursorPos(WORD iCursorX, WORD iCursorY);
 void kTerminalGetCursorPos(WORD* pwCursorX, WORD* pwCursorY);

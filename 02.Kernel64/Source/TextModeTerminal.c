@@ -4,8 +4,15 @@
 #include "Keyboard.h"
 #include "string.h"
 #include "Utility.h"
+#include "TerminalCommand.h"
 
 static TERMINALMANAGER gs_stTerminalManager={0,};
+static TERMINALCOMMANDENTRY gs_stCommansList[]={
+    {"help", "Show Help", kTerminalCommandHelp},
+    {"cls", "Clear Screen", kTerminalCommandClear},
+    {"totalram", "Show Total RAM Size", kTerminalCommandShowTotalRamSize},
+    {"strtod", "String to Decimal/Hex Convert", kTerminalCommandStringToDeciHexConvert},
+};
 
 void kTerminalClear(BYTE attrib, BOOL bClearChar){
     int i;
