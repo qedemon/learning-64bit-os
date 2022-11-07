@@ -3,7 +3,7 @@ NDISASM = ndisasm
 UNAME_S:=$(shell uname -s)
 ifeq ($(UNAME_S), Linux)
 	GCC32 = /usr/bin/gcc -m32 -ffreestanding
-	LD32 = /usr/bin/ld -e main -melf_i386 -Ttext 0x10200 -nostdlib
+	LD32 = /usr/bin/ld -e main -melf_i386 -T ../elf_i386.x -Ttext 0x10200 -nostdlib
 	OBJCOPY32 = /usr/bin/objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
 endif
 ifeq ($(UNAME_S), Darwin)
