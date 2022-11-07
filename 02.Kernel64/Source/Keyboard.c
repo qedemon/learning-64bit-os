@@ -1,4 +1,5 @@
 #include "AssemblyUtility.h"
+#include "Utility.h"
 #include "Keyboard.h"
 #include "Queue.h"
 
@@ -17,6 +18,10 @@ BOOL kIsOutputBufferFull(){
 BOOL kActivateKeyBoard(){
     int i;
     int j;
+    BOOL bPreviousInterrupt;
+    BOOL bResult;
+
+    bPreviousInterrupt=kSetInterruptFlag(FALSE);
     kOutPortByte(0x64, 0xAE);
 
     for(i=0; i<0xFFFF; i++){
@@ -25,15 +30,9 @@ BOOL kActivateKeyBoard(){
         }
     }
     kOutPortByte(0x60, 0xF4);
-    for(j=0; j<100; j++){
-        for(i=0; j<0xFFFF; j++){
-            if(kIsOutputBufferFull())
-                break;
-        }
-        if(kInPortByte(0x60)==0xFA)
-            return TRUE;
-    }
-    return FALSE;
+    bResult=kWaitForACKAndPutOtherScanCode();
+    kSetInterruptFlag(bPreviousInterrupt);
+    return bResult;
 }
 
 BOOL kChangeKeyboardLeds(BOOL bCapsLockOn, BOOL bNumLockOn, BOOL bScrollLockOn){
@@ -283,15 +282,53 @@ BOOL kInitializeKeyBoard(){
 BOOL kUpdateKeyBoardManagerAndPutKeyDatatToQueue(BYTE bScanCode){
     BYTE bAsciiCode;
     KEYDATA stKeyData;
+    BYTE bPreviousInterrupt;
+    BYTE bResult=FALSE;
     if(kUpdateKeyBoardManager(bScanCode, &bAsciiCode)){
+        if(kIsQueueFull(&gs_stKeyQueue)){
+            return FALSE;
+        }
         stKeyData.bScanCode=bScanCode;
         stKeyData.bASCIICode=bAsciiCode;
         stKeyData.bFlags=0;
-        return kPutDataToQueue(&gs_stKeyQueue, &stKeyData);
+        bPreviousInterrupt=kSetInterruptFlag(FALSE);
+        bResult = kPutDataToQueue(&gs_stKeyQueue, &stKeyData);
+        kSetInterruptFlag(bPreviousInterrupt);
+
+        return bResult;
     }
     return FALSE;
 }
 
 BOOL kGetKeyFromKeyQueue(KEYDATA* pstOutput){
-    return kGetDataFromQueue(&gs_stKeyQueue, &pstOutput);
+    BOOL bResult;
+    BOOL bPreviousInterrupt;
+    if(kIsQueueEmpty(&gs_stKeyQueue))
+        return FALSE;
+    bPreviousInterrupt = kSetInterruptFlag(FALSE);
+    bResult=kGetDataFromQueue(&gs_stKeyQueue, pstOutput);
+    kSetInterruptFlag(bPreviousInterrupt);
+    return bResult;
+}
+
+BOOL kWaitForACKAndPutOtherScanCode(){
+    int i,j;
+    BYTE bData;
+    BYTE bResult=FALSE;
+    for(j=0; j<100; j++){
+        for(i=0; i<0xFFFF; i++){
+            if(kIsOutputBufferFull()){
+                break;
+            }
+        }
+        bData=kInPortByte(0x60);
+        if(bData==0xFA){
+            bResult=TRUE;
+            break;
+        }
+        else{
+            kUpdateKeyBoardManagerAndPutKeyDatatToQueue(bData);
+        }
+    }
+    return bResult;
 }

@@ -1,4 +1,5 @@
 #include "Utility.h"
+#include "AssemblyUtility.h"
 
 void kMemSet(void* pDest, BYTE bData, int iSize){
     int i;
@@ -22,4 +23,20 @@ void kPrintString(int iX, int iY, const char* pcString){
     for(i=0; pcString[i]!=0; i++){
         pstString[i].bChar=pcString[i];
     }
+}
+
+
+BOOL kSetInterruptFlag(BOOL bEnableInterrupt){
+    QWORD qwRFLAGS;
+    qwRFLAGS = kReadRFLAGS();
+    if(bEnableInterrupt){
+        kEnableInterrupt();
+    }
+    else{
+        kDisableInterrupt();
+    }
+    if(qwRFLAGS&0x0200){
+        return TRUE;
+    }
+    return FALSE;
 }

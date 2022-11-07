@@ -92,4 +92,6 @@ BOOL kInitializeKeyBoard();
 BOOL kUpdateKeyBoardManagerAndPutKeyDatatToQueue(BYTE bScanCode);
 BOOL kGetKeyFromKeyQueue(KEYDATA* pstOutput);
 
+BOOL kWaitForACKAndPutOtherScanCode();
+
 #endif

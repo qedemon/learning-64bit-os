@@ -28,18 +28,19 @@ void kCommonInterruptHandler(int iVectorNumber){
 
 
 void kKeyboardInterruptHandler(int iVectorNumber){
-    char vcBuffer[]="[INT:  ,  ]";
+#ifdef DEBUG
+    char vcBuffer[]="[kNT:  ,  ]";
     static int g_iCommonInterruptCout=0;
-
+#endif
     BYTE scanCode;
-
+#ifdef DEBUG
     g_iCommonInterruptCout++;
     vcBuffer[5]=iVectorNumber/10+'0';
     vcBuffer[6]=iVectorNumber%10+'0';
     vcBuffer[8]=(g_iCommonInterruptCout>=10)?(g_iCommonInterruptCout/10+'0'):' ';
     vcBuffer[9]=g_iCommonInterruptCout%10+'0';
     kPrintString(0, 0, vcBuffer);
-
+#endif
     if(kIsOutputBufferFull()){
         scanCode=kGetKeyBoardScanCode();
         kUpdateKeyBoardManagerAndPutKeyDatatToQueue(scanCode);

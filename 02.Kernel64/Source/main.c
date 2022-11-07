@@ -46,7 +46,7 @@ void main(){
     kMoveCursorPos(0, 15);
     
     while(1){
-        if(kGetKeyFromKeyQueue(&stKeyData)){
+        if(kGetKeyFromKeyQueue(&stKeyData)){    
             kDataIntoTerminal(stKeyData.bASCIICode);
             if(stKeyData.bASCIICode=='0'){
                 BOOL scanCode;
