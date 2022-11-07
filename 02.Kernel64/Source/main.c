@@ -5,6 +5,7 @@
 #include "TextModeTerminal.h"
 #include "Descriptor.h"
 #include "PIC.h"
+#include "String.h"
 
 void main(){
     int i=0;
