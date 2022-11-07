@@ -48,7 +48,8 @@ void main(){
     while(1){
         if(kGetKeyFromKeyQueue(&stKeyData)){
             kDataIntoTerminal(stKeyData.bASCIICode);
-            if(terminalKey=='0'){
+            if(stKeyData.bASCIICode=='0'){
+                BOOL scanCode;
                 scanCode=scanCode/0;
             }
         }
