@@ -138,3 +138,34 @@ void kStartTerminal(){
         }
     }
 }
+
+void kExecuteCommand(const char* pcCommandBuffer){
+    int i, iSpaceIndex, iCount;
+    int iCommandBufferLen=kstrlen(pcCommandBuffer);
+    for(iSpaceIndex=0; iSpaceIndex<iCommandBufferLen; iSpaceIndex++){
+        if(pcCommandBuffer[iSpaceIndex]==' ')
+            break;
+    }
+    iCount=sizeof(gs_stCommansList)/sizeof(TERMINALCOMMANDENTRY);
+    for(i=0; i<iCount; i++){
+        if(kstrlen(gs_stCommansList[i].pcCommand)==iSpaceIndex){
+            if(kMemCmp(gs_stCommansList[i].pcCommand, pcCommandBuffer, iSpaceIndex)==0){
+                gs_stCommansList[i].pfFunction(pcCommandBuffer+iSpaceIndex+1);
+                break;
+            }
+        }
+    }
+}
+
+void kTerminalCommandHelp(const char* pcArgument){
+
+}
+void kTerminalCommandClear(const char* pcArgument){
+
+}
+void kTerminalCommandShowTotalRamSize(const char* pcArgumnet){
+
+}
+void kTerminalCommandStringToDeciHexConvert(const char* pcArgument){
+
+}

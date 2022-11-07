@@ -60,4 +60,11 @@ int kprintf(const char* pcFormatString, ...);
 
 void kStartTerminal();
 
+void kExecuteCommand(const char* pcCommandBuffer);
+
+void kTerminalCommandHelp(const char* pcArgument);
+void kTerminalCommandClear(const char* pcArgument);
+void kTerminalCommandShowTotalRamSize(const char* pcArgumnet);
+void kTerminalCommandStringToDeciHexConvert(const char* pcArgument);
+
 #endif
