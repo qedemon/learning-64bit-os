@@ -1,6 +1,7 @@
 #ifndef TEXTMODETERMINAL_H
 #define TEXTMODETERMINAL_H
 #include "Type.h"
+#include "Keyboard.h"
 
 #define TERMINAL_BACKGROUND_BLACK 0x00
 #define TERMINAL_BACKGROUND_BLUE 0x10
@@ -32,17 +33,24 @@
 #define VGA_INDEX_UPPERCURSOR 0x0E
 #define VGA_INDEX_LOWERCURSOR 0x0F
 
+#define TERMINAL_PREFIX "MINT64:"
+#define TERMINAL_TAP_SIZE 8
+
 typedef struct kTextTerminalManager{
-    WORD iCursorX;
-    WORD iCursorY;
+    int iOffset;
     BYTE bAttrib;
 }TERMINALMANAGER;
 
-void kClearTerminal(BYTE attrib, BOOL bClearChar);
-void kMoveCursorPos(WORD iCursorX, WORD iCursorY);
+void kTerminalClear(BYTE attrib, BOOL bClearChar);
+void kTerminalSetCursorPos(WORD iCursorX, WORD iCursorY);
+void kTerminalGetCursorPos(WORD* pwCursorX, WORD* pwCursorY);
+void kTerminalMoveCursor(int iStep);
 void kUpdateCursorPos();
-void kDataIntoTerminal(BYTE keyCode);
+void kDataIntoTerminal(const KEYDATA* pstKeyData);
 
-void kPrintf(const char* pcFormatString, ...);
+int kTerminalPrintString(WORD iCursorX, WORD iCursorY, const char* str);
+int kprintf(const char* pcFormatString, ...);
+
+void kStartTerminal();
 
 #endif

@@ -8,10 +8,6 @@
 #include "String.h"
 
 void main(){
-    int i=0;
-    KEYDATA stKeyData;
-    char str[1024];
-    char str2[1024];
     kPrintString(0, 10, "Switch to IA-32e Mode Success~!!");
     kPrintString(0, 11, "IA-32e C Language Kernel Start..............[Pass]");
 
@@ -45,19 +41,9 @@ void main(){
         while(1);
     }
 
-    kClearTerminal(TERMINAL_DEFAULT_COLOR, FALSE);
-    kMoveCursorPos(0, 16);
-    kHexToString(1024, str2);
-    ksprintf(str, "String Formating test ..........[%d=0x%q]", 16+8, 16+8);
-    kPrintString(0, 16, str);
+    kTerminalClear(TERMINAL_DEFAULT_COLOR, FALSE);
+    kTerminalSetCursorPos(0, 16);
+    kprintf("MINT64 OS Start\n");
     
-    while(1){
-        if(kGetKeyFromKeyQueue(&stKeyData)){    
-            kDataIntoTerminal(stKeyData.bASCIICode);
-            if(stKeyData.bASCIICode=='0'){
-                BOOL scanCode;
-                scanCode=scanCode/0;
-            }
-        }
-    }
+    kStartTerminal();
 }

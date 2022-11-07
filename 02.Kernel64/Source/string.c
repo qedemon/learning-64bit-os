@@ -62,17 +62,20 @@ int kVSPrintf(char* pcBuffer, const char* pcFormatString, va_list ap){
                     char ch=(char)va_arg(ap, int);
                     pcBuffer[iBufferIndex]=ch;
                     iBufferIndex++;
-                }
-                case 'd':
-                case 'i':{
-                    int iValue=(int)va_arg(ap, int);
-                    iBufferIndex+=kitoa(iValue, pcBuffer+iBufferIndex, 10);
+#ifndef DEBUG
                     break;
+#endif
                 }
                 case 'x':
                 case 'X':{
                     DWORD dwValue=(DWORD)va_arg(ap, DWORD);
                     iBufferIndex+=kitoa(dwValue, pcBuffer+iBufferIndex, 16);
+                    break;
+                }
+                case 'd':
+                case 'i':{
+                    int iValue=(int)va_arg(ap, int);
+                    iBufferIndex+=kitoa(iValue, pcBuffer+iBufferIndex, 10);
                     break;
                 }
                 case 'q':

@@ -253,11 +253,13 @@ BOOL kUpdateKeyBoardManager(BYTE bScanCode, BYTE* pbOutputKeyCode){
                 return TRUE;
             }
         }
+        return TRUE;
     }
     else{
         if(keyMappingEntry.bNormalCode==KEY_LSHIFT||keyMappingEntry.bNormalCode==KEY_RSHIFT){
             gs_KeyBoardManager.bShiftDown=FALSE;
         }
+        return FALSE;
     }
 
 
