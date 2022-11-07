@@ -40,10 +40,3 @@ BOOL kSetInterruptFlag(BOOL bEnableInterrupt){
     }
     return FALSE;
 }
-
-int kVSPrintf(const char* pcBuffer, const char* pcFormatString, va_list ap){
-    int i;
-    for(i=0; pcFormatString[i]!=0; i++){
-        
-    }
-}

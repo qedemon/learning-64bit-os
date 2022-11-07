@@ -9,6 +9,4 @@ int kMemCpy(void* pDest, const void* pSrc, int iSize);
 
 BOOL kSetInterruptFlag(BOOL bEnableInterrupt);
 
-int kVSPrintf(const char* pcBuffer, const char* pcFormatString, va_list ap);
-
 #endif
