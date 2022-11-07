@@ -10,6 +10,7 @@
 void main(){
     int i=0;
     KEYDATA stKeyData;
+    char str[1024];
     kPrintString(0, 10, "Switch to IA-32e Mode Success~!!");
     kPrintString(0, 11, "IA-32e C Language Kernel Start..............[Pass]");
 
@@ -45,6 +46,7 @@ void main(){
 
     kClearTerminal(TERMINAL_DEFAULT_COLOR, FALSE);
     kMoveCursorPos(0, 16);
+    //ksprintf("String Formating test ..........[%s]", "Pass");
     
     while(1){
         if(kGetKeyFromKeyQueue(&stKeyData)){    
