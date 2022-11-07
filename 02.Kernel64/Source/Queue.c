@@ -27,7 +27,7 @@ BOOL kPutDataToQueue(QUEUE* pstQueue, const void* pvData){
     pstQueue->bLastOperationPut=TRUE;
     return TRUE;
 }
-BOOL kGetDataFromQueueu(QUEUE* pstQueue, void* pvData){
+BOOL kGetDataFromQueue(QUEUE* pstQueue, void* pvData){
     if(kIsQueueEmpty(pstQueue)){
         return FALSE;
     }
