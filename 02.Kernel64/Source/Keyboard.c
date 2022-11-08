@@ -253,11 +253,14 @@ BOOL kUpdateKeyBoardManager(BYTE bScanCode, BYTE* pbOutputKeyCode){
                 return TRUE;
             }
         }
+        *pbOutputKeyCode=keyMappingEntry.bNormalCode;
+        return TRUE;
     }
     else{
         if(keyMappingEntry.bNormalCode==KEY_LSHIFT||keyMappingEntry.bNormalCode==KEY_RSHIFT){
             gs_KeyBoardManager.bShiftDown=FALSE;
         }
+        return FALSE;
     }
 
 
@@ -331,4 +334,17 @@ BOOL kWaitForACKAndPutOtherScanCode(){
         }
     }
     return bResult;
+}
+
+
+void kReboot(){
+    int i;
+    for(i=0; i<0xffff; i++){
+        if(!kIsInputBufferFull()){
+            break;
+        }
+    }
+    kOutPortByte(0x64, 0xD1);
+    kOutPortByte(0x60, 0);
+    while(1);
 }

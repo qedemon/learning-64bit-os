@@ -1,6 +1,7 @@
 #ifndef TEXTMODETERMINAL_H
 #define TEXTMODETERMINAL_H
 #include "Type.h"
+#include "Keyboard.h"
 
 #define TERMINAL_BACKGROUND_BLACK 0x00
 #define TERMINAL_BACKGROUND_BLUE 0x10
@@ -32,15 +33,49 @@
 #define VGA_INDEX_UPPERCURSOR 0x0E
 #define VGA_INDEX_LOWERCURSOR 0x0F
 
+#define TERMINAL_PREFIX "MINT64>"
+#define TERMINAL_TAP_SIZE 8
+
 typedef struct kTextTerminalManager{
-    WORD iCursorX;
-    WORD iCursorY;
+    int iOffset;
     BYTE bAttrib;
 }TERMINALMANAGER;
 
-void kClearTerminal(BYTE attrib, BOOL bClearChar);
-void kMoveCursorPos(WORD iCursorX, WORD iCursorY);
+typedef void(*TERMINALCOMMANDFUNCTION)(const char* pcArgument);
+typedef struct kTerminalCommandEntryStructure{
+    char* pcCommand;
+    char* pcHelp;
+    TERMINALCOMMANDFUNCTION pfFunction;
+}TERMINALCOMMANDENTRY;
+
+typedef struct kArgumentListStruct{
+    const char* pcBuffer;
+    int iLength;
+    int iCurrentIndex;
+}ARGUMENTLIST;
+
+void kTerminalClear(BYTE attrib, BOOL bClearChar);
+void kTerminalSetCursorPos(WORD iCursorX, WORD iCursorY);
+void kTerminalGetCursorPos(WORD* pwCursorX, WORD* pwCursorY);
+void kTerminalMoveCursor(int iStep);
 void kUpdateCursorPos();
-void kDataIntoTerminal(BYTE keyCode);
+void kDataIntoTerminal(const KEYDATA* pstKeyData);
+
+int kTerminalPrintString(WORD iCursorX, WORD iCursorY, const char* str);
+int kprintf(const char* pcFormatString, ...);
+
+void kStartTerminal();
+
+void kInitializeArgumentList(ARGUMENTLIST* pstArgumentList, const char* pcBuffer);
+int kGetNextArgumnet(ARGUMENTLIST* pstArgumentList, char* pcArgument);
+
+void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** pstTerminalCmd, int* piSpaceIndex);
+void kTerminalExecuteCommand(const char* pcCommandBuffer);
+
+void kTerminalCommandHelp(const char* pcArgument);
+void kTerminalCommandClear(const char* pcArgument);
+void kTerminalCommandShowTotalRamSize(const char* pcArgumnet);
+void kTerminalCommandStringToDeciHexConvert(const char* pcArgument);
+void kTerminalCommandShutdown(const char* pcArgument);
 
 #endif

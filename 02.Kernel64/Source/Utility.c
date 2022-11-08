@@ -15,6 +15,20 @@ int kMemCpy(void* pDest, const void* pSrc, int iSize){
     return i;
 }
 
+int kMemCmp(const void* pSrcA, const void* pSrcB, int iSize){
+    int iReturn=0;
+    int i;
+    for(i=0; i<iSize; i++){
+        if(*((char*)pSrcA)!=*((char*)pSrcB)){
+            iReturn=i+1;
+            break;
+        }
+        pSrcA++;
+        pSrcB++;
+    }
+    return iReturn;
+}
+
 void kPrintString(int iX, int iY, const char* pcString){
     kCharStruct* pstString=(kCharStruct*) 0xB8000;
     int i;
@@ -39,4 +53,25 @@ BOOL kSetInterruptFlag(BOOL bEnableInterrupt){
         return TRUE;
     }
     return FALSE;
+}
+
+static QWORD gs_qwTotalRamSize=0;
+
+void kCheckTotalRamSize(){
+    DWORD* pdwCurrentAddress;
+    DWORD dwPreviousValue;
+
+    pdwCurrentAddress=(DWORD*)0x4000000;
+    while(1){
+        dwPreviousValue=*pdwCurrentAddress;
+        *pdwCurrentAddress=0x12345678;
+        if(*pdwCurrentAddress!=0x12345678)
+            break;
+        *pdwCurrentAddress=dwPreviousValue;
+        pdwCurrentAddress+=(0x400000/sizeof(DWORD));
+    }
+    gs_qwTotalRamSize=(QWORD)pdwCurrentAddress/0x100000;
+}
+QWORD kGetTotalRamSize(){
+    return gs_qwTotalRamSize;
 }

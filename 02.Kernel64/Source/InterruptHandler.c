@@ -26,6 +26,9 @@ void kCommonInterruptHandler(int iVectorNumber){
     kSendEOIToPIC(iVectorNumber-32);
 }
 
+void kTimerInterruptHandler(int iVectorNumber){
+    kSendEOIToPIC(iVectorNumber-32);
+}
 
 void kKeyboardInterruptHandler(int iVectorNumber){
 #ifdef DEBUG

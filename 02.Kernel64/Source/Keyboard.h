@@ -94,4 +94,7 @@ BOOL kGetKeyFromKeyQueue(KEYDATA* pstOutput);
 
 BOOL kWaitForACKAndPutOtherScanCode();
 
+
+void kReboot();
+
 #endif
