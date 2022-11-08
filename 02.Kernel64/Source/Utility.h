@@ -10,4 +10,7 @@ int kMemCmp(const void* pSrcA, const void* pSrcB, int iSize);
 
 BOOL kSetInterruptFlag(BOOL bEnableInterrupt);
 
+void kCheckTotalRamSize();
+QWORD kGetTotalRamSize();
+
 #endif
