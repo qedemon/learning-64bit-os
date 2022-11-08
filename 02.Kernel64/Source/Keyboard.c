@@ -253,6 +253,7 @@ BOOL kUpdateKeyBoardManager(BYTE bScanCode, BYTE* pbOutputKeyCode){
                 return TRUE;
             }
         }
+        *pbOutputKeyCode=keyMappingEntry.bNormalCode;
         return TRUE;
     }
     else{
