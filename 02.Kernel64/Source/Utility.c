@@ -54,3 +54,24 @@ BOOL kSetInterruptFlag(BOOL bEnableInterrupt){
     }
     return FALSE;
 }
+
+static QWORD gs_qwTotalRamSize=0;
+
+void kCheckTotalRamSize(){
+    DWORD* pdwCurrentAddress;
+    DWORD dwPreviousValue;
+
+    pdwCurrentAddress=(DWORD*)0x4000000;
+    while(1){
+        dwPreviousValue=*pdwCurrentAddress;
+        *pdwCurrentAddress=0x12345678;
+        if(*pdwCurrentAddress!=0x12345678)
+            break;
+        *pdwCurrentAddress=dwPreviousValue;
+        pdwCurrentAddress+=(0x400000/sizeof(DWORD));
+    }
+    gs_qwTotalRamSize=(QWORD)pdwCurrentAddress/0x100000;
+}
+QWORD kGetTotalRamSize(){
+    return gs_qwTotalRamSize;
+}

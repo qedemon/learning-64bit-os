@@ -33,7 +33,7 @@
 #define VGA_INDEX_UPPERCURSOR 0x0E
 #define VGA_INDEX_LOWERCURSOR 0x0F
 
-#define TERMINAL_PREFIX "MINT64:"
+#define TERMINAL_PREFIX "MINT64>"
 #define TERMINAL_TAP_SIZE 8
 
 typedef struct kTextTerminalManager{
@@ -48,6 +48,12 @@ typedef struct kTerminalCommandEntryStructure{
     TERMINALCOMMANDFUNCTION pfFunction;
 }TERMINALCOMMANDENTRY;
 
+typedef struct kArgumentListStruct{
+    const char* pcBuffer;
+    int iLength;
+    int iCurrentIndex;
+}ARGUMENTLIST;
+
 void kTerminalClear(BYTE attrib, BOOL bClearChar);
 void kTerminalSetCursorPos(WORD iCursorX, WORD iCursorY);
 void kTerminalGetCursorPos(WORD* pwCursorX, WORD* pwCursorY);
@@ -60,11 +66,16 @@ int kprintf(const char* pcFormatString, ...);
 
 void kStartTerminal();
 
-void kExecuteCommand(const char* pcCommandBuffer);
+void kInitializeArgumentList(ARGUMENTLIST* pstArgumentList, const char* pcBuffer);
+int kGetNextArgumnet(ARGUMENTLIST* pstArgumentList, char* pcArgument);
+
+void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** pstTerminalCmd, int* piSpaceIndex);
+void kTerminalExecuteCommand(const char* pcCommandBuffer);
 
 void kTerminalCommandHelp(const char* pcArgument);
 void kTerminalCommandClear(const char* pcArgument);
 void kTerminalCommandShowTotalRamSize(const char* pcArgumnet);
 void kTerminalCommandStringToDeciHexConvert(const char* pcArgument);
+void kTerminalCommandShutdown(const char* pcArgument);
 
 #endif

@@ -8,32 +8,45 @@
 #include "String.h"
 
 void main(){
-    kPrintString(0, 10, "Switch to IA-32e Mode Success~!!");
-    kPrintString(0, 11, "IA-32e C Language Kernel Start..............[Pass]");
+    WORD wCursorX, wCursorY;
+    kTerminalClear(TERMINAL_DEFAULT_COLOR, FALSE);
+    kTerminalSetCursorPos(0, 10);
+    
+    kprintf("%s\n", "Switch to IA-32e Mode Success~!!");
+    kprintf("%s\n", "IA-32e C Language Kernel Start..............[Pass]");
 
-    kPrintString(0, 12, "GDT Initialize And Switch for IA-32e Mode...[    ]");
+    kprintf("%s", "GDT Initialize And Switch for IA-32e Mode...[    ]");
     kInitializeGDTTableAndTSS();    
     kLoadGDTR((QWORD) GDTR_STARTADDRESS);
-    kPrintString(45, 12, "Pass");
+    kTerminalGetCursorPos(&wCursorX, &wCursorY);
+    kTerminalSetCursorPos(45, wCursorY++);
+    kprintf("Pass\n");
 
-    kPrintString(0, 13, "IDT Initialize..............................[    ]");
+    kprintf("%s", "IDT Initialize..............................[    ]");
     kInitializeIDTTables();
     kLoadIDTR((QWORD) IDTR_STARTADDRESS);
-    kPrintString(45, 13, "Pass");
+    kTerminalSetCursorPos(45, wCursorY++);
+    kprintf("Pass\n");
 
-    kPrintString(0, 14, "Start Interrupt.............................[    ]");
+    kprintf("%s", "Total RAM size check........................[    ]");
+    kCheckTotalRamSize();
+    kTerminalSetCursorPos(45, wCursorY++);
+    kprintf("Pass], Size = %d MB\n", kGetTotalRamSize());
+
+    kprintf("%s", "Start Interrupt.............................[    ]");
     kInitializePIC();
     kMaskPICInterrupt(0);
     kEnableInterrupt();
-    kPrintString(45, 14, "Pass");
+    kTerminalSetCursorPos(45, wCursorY++);
+    kprintf("Pass\n");
     
-
-    kPrintString(0, 15, "Activate Keyboard...........................[Pass]");
+    kprintf("%s", "Activate Keyboard...........................[Pass]");
+    kTerminalSetCursorPos(45, wCursorY++);
     if(kInitializeKeyBoard()){
-        kPrintString(45, 15, "Pass");
+        kprintf("Pass\n");
     }
     else{
-        kPrintString(45, 15, "Fail");
+        kprintf("Pass\n");
         while(1);
     }
 
