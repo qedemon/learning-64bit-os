@@ -57,7 +57,7 @@ void main(){
         while(1);
     }
 
-    kTerminalSetCursorPos(0, 16);
+    kTerminalSetCursorPos(0, wCursorY);
     kprintf("MINT64 OS Start\n");
     
     kStartTerminal();
