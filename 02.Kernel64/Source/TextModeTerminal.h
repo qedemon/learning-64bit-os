@@ -68,6 +68,7 @@ void kDataIntoTerminal(const KEYDATA* pstKeyData);
 
 int kTerminalPrintString(WORD iCursorX, WORD iCursorY, const char* str);
 int kprintf(const char* pcFormatString, ...);
+char kGetChar();
 
 void kStartTerminal();
 

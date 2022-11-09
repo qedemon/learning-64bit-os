@@ -4,6 +4,7 @@
 #include "string.h"
 #include "PIT.h"
 #include "RTC.h"
+#include "Task.h"
 
 void kTerminalCommandHelp(const char* pcArgument){
     TERMINALCOMMANDENTRY* pTerminalCmd;
@@ -72,7 +73,7 @@ void kTerminalCommandWait(const char* pcArgument){
 }
 
 
-void kTerminalShowDateAndTime(const char* pcArgument){
+void kTerminalCommandShowDateAndTime(const char* pcArgument){
     BYTE bHour, bMinute, bSecond;
     BYTE bMonth, bDayOfMonth, bDayOfWeek;
     WORD wYear;
@@ -83,14 +84,14 @@ void kTerminalShowDateAndTime(const char* pcArgument){
 }
 
 
-void kTermianlMeasureCPUSpeed(const char* pcArgument){
+void kTermianlCommandMeasureCPUSpeed(const char* pcArgument){
     QWORD qwCPUCount;
     kprintf("Measureing CPU Speed......\n");
     qwCPUCount=kMeasureCPUSpeed();
     kprintf("CPU Frequency : %dMHz\n", qwCPUCount/1000/1000);
 }
 
-void kTerminalStartTimer(const char* pcArgument){
+void kTerminalCommandStartTimer(const char* pcArgument){
     ARGUMENTLIST argumentList;
     char pcBuffer[100];
     int millisecond;
@@ -102,5 +103,32 @@ void kTerminalStartTimer(const char* pcArgument){
         if(kGetNextArgumnet(&argumentList, pcBuffer)!=0)
             bPeriodic=katoi(pcBuffer, 10);
         kInitializePIT(MSTOCOUNT(millisecond), bPeriodic);
+    }
+}
+
+static TCB gs_stTaskControlBlock[2]={0,};
+static QWORD gs_vstStack[1024]={0,};
+
+void kTestTask(){
+    int i=0;
+    while(1){
+        i++;
+        kprintf("[%d] This message is from kTestTask. Press any key to continue\n", i);
+        kGetChar();
+        kSwitchContext(&(gs_stTaskControlBlock[1].stContext), &(gs_stTaskControlBlock[0].stContext));
+    }
+}
+
+void kTerminalCommandCreateTask(const char* pcArgument){
+    int i=0;
+    kInitializeTask(&(gs_stTaskControlBlock[1]), 1, 0, (QWORD) kTestTask, &(gs_vstStack), sizeof(gs_vstStack));
+    while(1){
+        char ch;
+        i++;
+        kprintf("[%d] This message is from kTerminalCommandCreateTask. Press any key to continue\n", i);
+        ch=kGetChar();
+        if(ch=='q')
+            break;
+        kSwitchContext(&(gs_stTaskControlBlock[0].stContext), &(gs_stTaskControlBlock[1].stContext));
     }
 }

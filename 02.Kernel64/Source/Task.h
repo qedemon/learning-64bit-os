@@ -46,5 +46,6 @@ typedef struct kTaskControlBlockStruct{
 }TCB;
 
 void kInitializeTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize);
+void kSwitchContext(CONTEXT* pstCurrentContext, CONTEXT* pstNextContext);
 
 #endif
