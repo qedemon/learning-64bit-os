@@ -35,8 +35,8 @@ PROTECTEDMODE:
     mov fs, ax
     mov gs, ax
 
-    mov ebp, 0xFFFE
-    mov esp, 0xFFFE
+    mov ebp, 0xFFFC
+    mov esp, 0xFFFC
 
     push (MODESWITCHMESSAGE-$$+0x10000)
     push 2
