@@ -5,7 +5,7 @@
 #include "TextModeTerminal.h"
 #include "Descriptor.h"
 #include "PIC.h"
-#include "String.h"
+#include "string.h"
 
 void main(){
     WORD wCursorX, wCursorY;
