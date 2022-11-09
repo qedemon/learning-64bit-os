@@ -14,5 +14,7 @@ void kCheckTotalRamSize();
 QWORD kGetTotalRamSize();
 
 void kWaitms(long lMillisecond);
+char* kConvertDayOfWeekToString(BYTE bDayOfWeek);
+QWORD kMeasureCPUSpeed();
 
 #endif

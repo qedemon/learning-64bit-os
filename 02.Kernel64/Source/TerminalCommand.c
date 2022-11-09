@@ -3,6 +3,7 @@
 #include "Utility.h"
 #include "string.h"
 #include "PIT.h"
+#include "RTC.h"
 
 void kTerminalCommandHelp(const char* pcArgument){
     TERMINALCOMMANDENTRY* pTerminalCmd;
@@ -70,4 +71,23 @@ void kTerminalCommandWait(const char* pcArgument){
         kprintf("input the time for wait\n");
     }
 
+}
+
+
+void kTerminalShowDateAndTime(const char* pcArgument){
+    BYTE bHour, bMinute, bSecond;
+    BYTE bMonth, bDayOfMonth, bDayOfWeek;
+    WORD wYear;
+    kReadRTCTime(&bHour, &bMinute, &bSecond);
+    kReadRTCDate(&wYear, &bMonth, &bDayOfMonth, &bDayOfWeek);
+    kprintf("Date : %d/%d/%d %s, ", wYear, bMonth, bDayOfMonth, kConvertDayOfWeekToString(bDayOfWeek));
+    kprintf("Time : %d:%d:%d\n", bHour, bMinute, bSecond);
+}
+
+
+void kTermianlMeasureCPUSpeed(const char* pcArgument){
+    QWORD qwCPUCount;
+    kprintf("Measureing CPU Speed......\n");
+    qwCPUCount=kMeasureCPUSpeed();
+    kprintf("CPU Frequency : %dMHz\n", qwCPUCount/1000/1000);
 }

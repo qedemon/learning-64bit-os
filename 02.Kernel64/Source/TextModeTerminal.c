@@ -15,6 +15,8 @@ static TERMINALCOMMANDENTRY gs_stCommansList[]={
     {"strtod", "String to Decimal/Hex Convert", kTerminalCommandStringToDeciHexConvert},
     {"shutdown", "Reboot PC", kTerminalCommandShutdown},
     {"wait", "wait milliseconds", kTerminalCommandWait},
+    {"time", "show date and time", kTerminalShowDateAndTime},
+    {"cpuspeed", "measure cpu speed", kTermianlMeasureCPUSpeed}
 };
 
 void kTerminalClear(){

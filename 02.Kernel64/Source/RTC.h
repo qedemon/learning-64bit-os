@@ -1,0 +1,23 @@
+#ifndef RTC_H
+#define RTC_H
+
+#include "Type.h"
+
+#define CMOS_MEMORYADDRESS_PORT 0x70
+#define CMOS_MEMORYDATA_PORT 0x71
+
+#define CMOS_MEMORYADDRESS_NMI 0x80
+#define CMOS_MEMORYADDRESS_RTC_SECONDS 0x00
+#define CMOS_MEMORYADDRESS_RTC_MINUTE 0x02
+#define CMOS_MEMORYADDRESS_RTC_HOUR 0x04
+#define CMOS_MEMORYADDRESS_RTC_DAYOFWEEK 0x06
+#define CMOS_MEMORYADDRESS_RTC_DAYOFMONTH 0x07
+#define CMOS_MEMORYADDRESS_RTC_MONTH 0x08
+#define CMOS_MEMORYADDRESS_RTC_YEAR 0x09
+
+#define RTC_BCDTOBINARY(x) (((x)>>4)*10+((x)&0x0f))
+
+void kReadRTCTime(BYTE* pbHour, BYTE* pbMinute, BYTE* pbSecond);
+void kReadRTCDate(WORD* pwYear, BYTE* pbMonth, BYTE* pbDayOfMonth, BYTE* pbDayOfWeek);
+
+#endif

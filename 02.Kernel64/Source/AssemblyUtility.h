@@ -12,4 +12,6 @@ void kEnableInterrupt();
 void kDisableInterrupt();
 QWORD kReadRFLAGS(void);
 
+QWORD kReadTSC();
+
 #endif

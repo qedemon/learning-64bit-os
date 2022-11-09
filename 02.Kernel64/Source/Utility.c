@@ -88,3 +88,24 @@ void kWaitms(long lMillisecond){
     kSetInterruptFlag(bInterrupt);
     kInitializePIT(MSTOCOUNT(1), TRUE);
 }
+
+char* kConvertDayOfWeekToString(BYTE bDayOfWeek){
+    static char* vpcDayOfWeekString[]={"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Error"};
+    if(bDayOfWeek>8){
+        return vpcDayOfWeekString[7];
+    }
+    return vpcDayOfWeekString[bDayOfWeek];
+}
+
+QWORD kMeasureCPUSpeed(){
+    int i;
+    QWORD qwLastTSC, qwTotalTSC=0;
+    BOOL bInterrupt=kSetInterruptFlag(FALSE);
+    for(i=0; i<200; i++){
+        qwLastTSC=kReadTSC();
+        kWaitUsingDirectPIT(MSTOCOUNT(50));
+        qwTotalTSC+=kReadTSC()-qwLastTSC;
+    }
+    kSetInterruptFlag(bInterrupt);
+    return qwTotalTSC/10;
+}

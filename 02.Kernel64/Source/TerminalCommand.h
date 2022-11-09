@@ -7,5 +7,7 @@ void kTerminalCommandShowTotalRamSize(const char* pcArgumnet);
 void kTerminalCommandStringToDeciHexConvert(const char* pcArgument);
 void kTerminalCommandShutdown(const char* pcArgument);
 void kTerminalCommandWait(const char* pcArgument);
+void kTerminalShowDateAndTime(const char* pcArgument);
+void kTermianlMeasureCPUSpeed(const char* pcArgument);
 
 #endif
