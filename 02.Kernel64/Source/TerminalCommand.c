@@ -9,7 +9,7 @@ void kTerminalCommandHelp(const char* pcArgument){
     TERMINALCOMMANDENTRY* pTerminalCmd;
     int i;
     for(i=0; (pTerminalCmd=kTerminalGetCMDEntry(i))!=NULL; i++){
-        kprintf("%s\t\t%s\n", pTerminalCmd->pcCommand, pTerminalCmd->pcHelp);
+        kprintf("%s\t%s\n", pTerminalCmd->pcCommand, pTerminalCmd->pcHelp);
     }
 }
 void kTerminalCommandClear(const char* pcArgument){
