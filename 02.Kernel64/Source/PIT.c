@@ -15,7 +15,7 @@ WORD kReadPITCounter0(){
     WORD wCounterValue;
     kOutPortByte(PIT_PORT_CONTROL, PIT_CONTROL_LATCH);
     lowByte=kInPortByte(PIT_PORT_COUNTER0);
-    highByte=kInPortByte(PIT_CONTROL_COUNTER0);
+    highByte=kInPortByte(PIT_PORT_COUNTER0);
     wCounterValue=highByte;
     wCounterValue<<=8;
     wCounterValue|=lowByte;
@@ -23,7 +23,7 @@ WORD kReadPITCounter0(){
 }
 void kWaitUsingDirectPIT(WORD wCount){
     WORD wLastCounter, wCurrentCounter;
-    kInitializePIT(0, TRUE);
+    kInitializePIT(0xFFFF, TRUE);
     wLastCounter=kReadPITCounter0();
     while(1){
         wCurrentCounter=kReadPITCounter0();
@@ -32,12 +32,13 @@ void kWaitUsingDirectPIT(WORD wCount){
     }
 }
 void kWaitms(long lMillisecond){
+    kDisableInterrupt();
     while(lMillisecond>30){
-        //kprintf("wait 0x%x\n", MSTOCOUNT(30));
         kWaitUsingDirectPIT(MSTOCOUNT(30));
         lMillisecond-=30;
     }
 
-    //kprintf("wait 0x%x\n", MSTOCOUNT(lMillisecond));
     kWaitUsingDirectPIT(MSTOCOUNT(lMillisecond));
+    kEnableInterrupt();
+    kInitializePIT(MSTOCOUNT(1), TRUE);
 }
