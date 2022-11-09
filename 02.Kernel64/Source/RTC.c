@@ -33,6 +33,7 @@ void kReadRTCDate(WORD* pwYear, BYTE* pbMonth, BYTE* pbDayOfMonth, BYTE* pbDayOf
     *pbMonth=RTC_BCDTOBINARY(bData);
 
     kOutPortByte(CMOS_MEMORYADDRESS_PORT, CMOS_MEMORYADDRESS_RTC_YEAR);
-    bData=kInPortByte(CMOS_MEMORYADDRESS_RTC_YEAR);
-    *pwYear=bData;
+    bData=kInPortByte(CMOS_MEMORYDATA_PORT);
+    *pwYear=RTC_BCDTOBINARY(bData)+2000;
+
 }
