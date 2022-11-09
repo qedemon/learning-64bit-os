@@ -15,9 +15,10 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"strtod", "String to Decimal/Hex Convert", kTerminalCommandStringToDeciHexConvert},
     {"shutdown", "Reboot PC", kTerminalCommandShutdown},
     {"wait", "wait milliseconds", kTerminalCommandWait},
-    {"time", "show date and time", kTerminalShowDateAndTime},
-    {"cpuspeed", "measure cpu speed", kTermianlMeasureCPUSpeed},
-    {"settimer", "settimer 100(ms) 1(periodic)", kTerminalStartTimer}
+    {"time", "show date and time", kTerminalCommandShowDateAndTime},
+    {"cpuspeed", "measure cpu speed", kTermianlCommandMeasureCPUSpeed},
+    {"settimer", "settimer 100(ms) 1(periodic)", kTerminalCommandStartTimer},
+    {"createTask", "Create Task", kTerminalCommandCreateTask}
 };
 
 void kTerminalClear(){
@@ -152,7 +153,7 @@ int kTerminalPrintString(WORD iCursorX, WORD iCursorY, const char* str){
 
 int kprintf(const char* pcFormatString, ...){
     int iReturn;
-    char vcBuffer[100];
+    char vcBuffer[128];
     int iOffset;
     WORD wCursorX, wCursorY;
     va_list valist;
@@ -190,6 +191,15 @@ int kGetNextArgumnet(ARGUMENTLIST* pstArgumentList, char* pcArgument){
     }
     pcArgument[iLen]=0;
     return iLen;
+}
+
+char kGetChar(){
+    KEYDATA stKeyData;
+    while(1){
+        if(kGetKeyFromKeyQueue(&stKeyData))
+            break;
+    }
+    return stKeyData.bASCIICode;
 }
 
 void kStartTerminal(){

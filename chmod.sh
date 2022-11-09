@@ -16,6 +16,5 @@ do
             chmod a-x $file
             chmod go+r $file
         fi
-#        echo $file
     fi
 done
