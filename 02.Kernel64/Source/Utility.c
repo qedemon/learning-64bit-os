@@ -1,5 +1,6 @@
 #include "Utility.h"
 #include "AssemblyUtility.h"
+#include "PIT.h"
 
 void kMemSet(void* pDest, BYTE bData, int iSize){
     int i;
@@ -74,4 +75,16 @@ void kCheckTotalRamSize(){
 }
 QWORD kGetTotalRamSize(){
     return gs_qwTotalRamSize;
+}
+
+void kWaitms(long lMillisecond){
+    BOOL bInterrupt=kSetInterruptFlag(FALSE);
+    while(lMillisecond>30){
+        kWaitUsingDirectPIT(MSTOCOUNT(30));
+        lMillisecond-=30;
+    }
+
+    kWaitUsingDirectPIT(MSTOCOUNT(lMillisecond));
+    kSetInterruptFlag(bInterrupt);
+    kInitializePIT(MSTOCOUNT(1), TRUE);
 }

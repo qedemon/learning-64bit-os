@@ -13,4 +13,6 @@ BOOL kSetInterruptFlag(BOOL bEnableInterrupt);
 void kCheckTotalRamSize();
 QWORD kGetTotalRamSize();
 
+void kWaitms(long lMillisecond);
+
 #endif

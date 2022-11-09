@@ -31,14 +31,3 @@ void kWaitUsingDirectPIT(WORD wCount){
             break;
     }
 }
-void kWaitms(long lMillisecond){
-    kDisableInterrupt();
-    while(lMillisecond>30){
-        kWaitUsingDirectPIT(MSTOCOUNT(30));
-        lMillisecond-=30;
-    }
-
-    kWaitUsingDirectPIT(MSTOCOUNT(lMillisecond));
-    kEnableInterrupt();
-    kInitializePIT(MSTOCOUNT(1), TRUE);
-}

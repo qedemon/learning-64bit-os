@@ -24,6 +24,5 @@
 void kInitializePIT(WORD wCount, BOOL bPeriodic);
 WORD kReadPITCounter0();
 void kWaitUsingDirectPIT(WORD wCount);
-void kWaitms(long lMillisecond);
 
 #endif
