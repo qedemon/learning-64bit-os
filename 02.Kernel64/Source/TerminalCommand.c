@@ -7,13 +7,9 @@
 
 void kTerminalCommandHelp(const char* pcArgument){
     TERMINALCOMMANDENTRY* pTerminalCmd;
-    int iSpaceIndex;
-    kTerminalSearchCommandEntryAndSpaceIndex(pcArgument, &pTerminalCmd, &iSpaceIndex);
-    if(pTerminalCmd!=NULL){
-        kprintf("%s\n", pTerminalCmd->pcHelp);
-    }
-    else{
-        kprintf("%s is not found\n", pcArgument);
+    int i;
+    for(i=0; (pTerminalCmd=kTerminalGetCMDEntry(i))!=NULL; i++){
+        kprintf("%s\t\t%s\n", pTerminalCmd->pcCommand, pTerminalCmd->pcHelp);
     }
 }
 void kTerminalCommandClear(const char* pcArgument){

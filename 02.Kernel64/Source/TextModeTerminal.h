@@ -77,4 +77,6 @@ int kGetNextArgumnet(ARGUMENTLIST* pstArgumentList, char* pcArgument);
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** pstTerminalCmd, int* piSpaceIndex);
 void kTerminalExecuteCommand(const char* pcCommandBuffer);
 
+TERMINALCOMMANDENTRY* kTerminalGetCMDEntry(int iIndex);
+
 #endif

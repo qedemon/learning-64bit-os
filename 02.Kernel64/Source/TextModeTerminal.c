@@ -8,7 +8,7 @@
 #include "TerminalCommand.h"
 
 static TERMINALMANAGER gs_stTerminalManager={0,};
-static TERMINALCOMMANDENTRY gs_stCommansList[]={
+static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"help", "Show Help", kTerminalCommandHelp},
     {"cls", "Clear Screen", kTerminalCommandClear},
     {"totalram", "Show Total RAM Size", kTerminalCommandShowTotalRamSize},
@@ -209,12 +209,12 @@ void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMI
         if(pcCommandBuffer[iSpaceIndex]==' ')
             break;
     }
-    iCount=sizeof(gs_stCommansList)/sizeof(TERMINALCOMMANDENTRY);
+    iCount=sizeof(gs_stCommandList)/sizeof(TERMINALCOMMANDENTRY);
     for(i=0; i<iCount; i++){
-        if(kstrlen(gs_stCommansList[i].pcCommand)==iSpaceIndex){
-            if(kMemCmp(gs_stCommansList[i].pcCommand, pcCommandBuffer, iSpaceIndex)==0){
+        if(kstrlen(gs_stCommandList[i].pcCommand)==iSpaceIndex){
+            if(kMemCmp(gs_stCommandList[i].pcCommand, pcCommandBuffer, iSpaceIndex)==0){
                 if(ppstTerminalCmd!=NULL)
-                    *ppstTerminalCmd = &(gs_stCommansList[i]);
+                    *ppstTerminalCmd = &(gs_stCommandList[i]);
                 if(piSpaceIndex!=NULL)
                     *piSpaceIndex=iSpaceIndex;
             }
@@ -231,4 +231,11 @@ void kTerminalExecuteCommand(const char* pcCommandBuffer){
     }
     else
         kprintf("%s is not found.\n", pcCommandBuffer);
+}
+
+TERMINALCOMMANDENTRY* kTerminalGetCMDEntry(int iIndex){
+    if(iIndex>=sizeof(gs_stCommandList)/sizeof(TERMINALCOMMANDENTRY)){
+        return NULL;
+    }
+    return &(gs_stCommandList[iIndex]);
 }
