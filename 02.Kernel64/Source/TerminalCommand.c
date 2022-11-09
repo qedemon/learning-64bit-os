@@ -9,13 +9,15 @@ void kTerminalCommandHelp(const char* pcArgument){
     TERMINALCOMMANDENTRY* pTerminalCmd;
     int i;
     for(i=0; (pTerminalCmd=kTerminalGetCMDEntry(i))!=NULL; i++){
-        kprintf("%s\t%s\n", pTerminalCmd->pcCommand, pTerminalCmd->pcHelp);
+        kprintf("%s\t", pTerminalCmd->pcCommand);
+        if(kstrlen(pTerminalCmd->pcCommand)<8)
+            kprintf("%c", '\t');
+        kprintf("%s\n", pTerminalCmd->pcHelp);
     }
 }
 void kTerminalCommandClear(const char* pcArgument){
     kTerminalClear();
     kTerminalSetCursorOffset(0);
-    kprintf("%s", TERMINAL_PREFIX);
 }
 void kTerminalCommandShowTotalRamSize(const char* pcArgumnet){
     kprintf("Total RAM size = %d MB\n", kGetTotalRamSize());

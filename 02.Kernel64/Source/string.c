@@ -62,9 +62,7 @@ int kVSPrintf(char* pcBuffer, const char* pcFormatString, va_list ap){
                     char ch=(char)va_arg(ap, int);
                     pcBuffer[iBufferIndex]=ch;
                     iBufferIndex++;
-#ifndef DEBUG
                     break;
-#endif
                 }
                 case 'x':
                 case 'X':{
