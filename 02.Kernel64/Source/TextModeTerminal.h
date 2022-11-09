@@ -54,9 +54,14 @@ typedef struct kArgumentListStruct{
     int iCurrentIndex;
 }ARGUMENTLIST;
 
-void kTerminalClear(BYTE attrib, BOOL bClearChar);
+void kTerminalClear();
+BYTE kTerminalGetAttribute();
+void kTerminalSetAttribute(BYTE bAttrib);
+void kTerminalSetCursorOffset(int iOffset);
+int kTerminalGetCursorOffset();
 void kTerminalSetCursorPos(WORD iCursorX, WORD iCursorY);
 void kTerminalGetCursorPos(WORD* pwCursorX, WORD* pwCursorY);
+
 void kTerminalMoveCursor(int iStep);
 void kUpdateCursorPos();
 void kDataIntoTerminal(const KEYDATA* pstKeyData);
@@ -71,11 +76,5 @@ int kGetNextArgumnet(ARGUMENTLIST* pstArgumentList, char* pcArgument);
 
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** pstTerminalCmd, int* piSpaceIndex);
 void kTerminalExecuteCommand(const char* pcCommandBuffer);
-
-void kTerminalCommandHelp(const char* pcArgument);
-void kTerminalCommandClear(const char* pcArgument);
-void kTerminalCommandShowTotalRamSize(const char* pcArgumnet);
-void kTerminalCommandStringToDeciHexConvert(const char* pcArgument);
-void kTerminalCommandShutdown(const char* pcArgument);
 
 #endif

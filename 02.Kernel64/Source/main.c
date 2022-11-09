@@ -9,7 +9,7 @@
 
 void main(){
     WORD wCursorX, wCursorY;
-    kTerminalClear(TERMINAL_DEFAULT_COLOR, FALSE);
+    kTerminalSetAttribute(TERMINAL_DEFAULT_COLOR);
     kTerminalSetCursorPos(0, 10);
     
     kprintf("%s\n", "Switch to IA-32e Mode Success~!!");
@@ -54,7 +54,6 @@ void main(){
         while(1);
     }
 
-    kTerminalClear(TERMINAL_DEFAULT_COLOR, FALSE);
     kTerminalSetCursorPos(0, 16);
     kprintf("MINT64 OS Start\n");
     

@@ -2,8 +2,10 @@
 #include "TextModeTerminal.h"
 #include "AssemblyUtility.h"
 #include "Keyboard.h"
+#include "PIT.h"
 #include "string.h"
 #include "Utility.h"
+#include "TerminalCommand.h"
 
 static TERMINALMANAGER gs_stTerminalManager={0,};
 static TERMINALCOMMANDENTRY gs_stCommansList[]={
@@ -12,21 +14,31 @@ static TERMINALCOMMANDENTRY gs_stCommansList[]={
     {"totalram", "Show Total RAM Size", kTerminalCommandShowTotalRamSize},
     {"strtod", "String to Decimal/Hex Convert", kTerminalCommandStringToDeciHexConvert},
     {"shutdown", "Reboot PC", kTerminalCommandShutdown},
+    {"wait", "wait milliseconds", kTerminalCommandWait},
 };
 
-void kTerminalClear(BYTE attrib, BOOL bClearChar){
+void kTerminalClear(){
     int i;
     kCharStruct* pVGAData=(kCharStruct*) TERMINAL_VIDEOMEMORYADDRESS;
     for(i=0; i<TERMINAL_WIDTH*TERMINAL_HEIGHT; i++){
-        if(bClearChar)
-            pVGAData->bChar=0;
-        pVGAData->bAttrib=attrib;
+        pVGAData->bChar=0;
         pVGAData++;
     }
-    if(bClearChar){
-        gs_stTerminalManager.iOffset=0;
+    gs_stTerminalManager.iOffset=0;
+}
+
+
+BYTE kTerminalGetAttribute(){
+    return gs_stTerminalManager.bAttrib;
+}
+void kTerminalSetAttribute(BYTE bAttrib){
+    int i;
+    gs_stTerminalManager.bAttrib=bAttrib;
+    kCharStruct* pVGAData=(kCharStruct*) TERMINAL_VIDEOMEMORYADDRESS;
+    for(i=0; i<TERMINAL_WIDTH*TERMINAL_HEIGHT; i++){
+        pVGAData->bAttrib=bAttrib;
+        pVGAData++;
     }
-    gs_stTerminalManager.bAttrib=attrib;
 }
 
 static char gs_vcCommandBuffer[300]={0,};
@@ -217,57 +229,4 @@ void kTerminalExecuteCommand(const char* pcCommandBuffer){
     }
     else
         kprintf("%s is not found.\n", pcCommandBuffer);
-}
-
-void kTerminalCommandHelp(const char* pcArgument){
-    TERMINALCOMMANDENTRY* pTerminalCmd;
-    int iSpaceIndex;
-    kTerminalSearchCommandEntryAndSpaceIndex(pcArgument, &pTerminalCmd, &iSpaceIndex);
-    if(pTerminalCmd!=NULL){
-        kprintf("%s\n", pTerminalCmd->pcHelp);
-    }
-    else{
-        kprintf("%s is not found\n", pcArgument);
-    }
-}
-void kTerminalCommandClear(const char* pcArgument){
-    kTerminalClear(gs_stTerminalManager.bAttrib, TRUE);
-    kTerminalSetCursorOffset(0);
-    kprintf("%s", TERMINAL_PREFIX);
-}
-void kTerminalCommandShowTotalRamSize(const char* pcArgumnet){
-    kprintf("Total RAM size = %d MB\n", kGetTotalRamSize());
-}
-void kTerminalCommandStringToDeciHexConvert(const char* pcArgument){
-    char vcArgument[100];
-    int i=0;
-    ARGUMENTLIST aList;
-    kInitializeArgumentList(&aList, pcArgument);
-    while(1){
-        if(kGetNextArgumnet(&aList, vcArgument)==0){
-            break;
-        }
-        kprintf("Argument%d = %s, ", i+1, vcArgument);
-        i++;
-        if(kMemCmp(vcArgument, "0x", 2)==0){
-            long lValue=katoi(vcArgument+2, 16);
-            kprintf("HEX value = 0x%q, Decimal value = %d\n", lValue, lValue);
-        }
-        else{
-            long lValue=katoi(vcArgument, 10);
-            kprintf("Decimal value = %d, Hex value = 0x%q\n", lValue, lValue);
-        }
-    }
-}
-
-void kTerminalCommandShutdown(const char* pcArgument){
-    kprintf("System Shutdown Start\n");
-    kprintf("Press Any Key To Reboot PC");
-    while(1){
-        KEYDATA keyData;
-        if(kGetKeyFromKeyQueue(&keyData)){
-            break;
-        }
-    }
-    kReboot();
 }
