@@ -1,4 +1,5 @@
 all: ImageMaker BootLoader Kernel32 Kernel64 Disk.img
+GCCFLAG?=
 
 BootLoader:
 	@echo
@@ -16,7 +17,7 @@ Kernel64:
 	@echo
 	@echo ========== Build Kernel64 ==========
 	@echo
-	make -C 02.Kernel64
+	make -C 02.Kernel64 GCCFLAG='${GCCFLAG}'
 
 ImageMaker:
 	@echo

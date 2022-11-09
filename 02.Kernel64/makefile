@@ -14,6 +14,7 @@ endif
 
 OBJECTDIRECTORY = Temp
 SOURCEDIRECTORY = Source
+GCCFLAG?=
 
 all: prepare Kernel64.bin
 
@@ -53,7 +54,7 @@ $(ENTRYOBJECTFILE) : $(ENTRYSOURCEFILE)
 	$(NASM64) -o $@ $<
 
 %.o : ../$(SOURCEDIRECTORY)/%.c
-	$(GCC64) -c $<
+	$(GCC64) $(GCCFLAG) -c $<
 
 Kernel64.elf : $(ENTRYOBJECTFILE) $(COBJECTFILES) $(ASSEMBLYOBJECTFILES)
 	$(LD64) -o $@ $^

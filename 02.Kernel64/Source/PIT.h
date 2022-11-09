@@ -22,5 +22,8 @@
 #define PIT_COUNTER0_PERIODIC (PIT_CONTROL_COUNTER0|PIT_CONTROL_LSBMSBRW|PIT_CONTROL_MODE2|PIT_CONTROL_BINARY)
 
 void kInitializePIT(WORD wCount, BOOL bPeriodic);
+WORD kReadPITCounter0();
+void kWaitUsingDirectPIT(WORD wCount);
+void kWaitms(long lMillisecond);
 
 #endif
