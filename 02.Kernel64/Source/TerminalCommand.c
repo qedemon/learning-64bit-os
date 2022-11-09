@@ -89,3 +89,18 @@ void kTermianlMeasureCPUSpeed(const char* pcArgument){
     qwCPUCount=kMeasureCPUSpeed();
     kprintf("CPU Frequency : %dMHz\n", qwCPUCount/1000/1000);
 }
+
+void kTerminalStartTimer(const char* pcArgument){
+    ARGUMENTLIST argumentList;
+    char pcBuffer[100];
+    int millisecond;
+    BOOL bPeriodic;
+    kInitializeArgumentList(&argumentList, pcArgument);
+    if(kGetNextArgumnet(&argumentList, pcBuffer)!=0){
+        millisecond=katoi(pcBuffer, 10);
+        bPeriodic=FALSE;
+        if(kGetNextArgumnet(&argumentList, pcBuffer)!=0)
+            bPeriodic=katoi(pcBuffer, 10);
+        kInitializePIT(MSTOCOUNT(millisecond), bPeriodic);
+    }
+}

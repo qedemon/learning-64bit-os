@@ -5,6 +5,7 @@
 #include "TextModeTerminal.h"
 #include "Descriptor.h"
 #include "PIC.h"
+#include "PIT.h"
 #include "string.h"
 
 void main(){
@@ -32,6 +33,8 @@ void main(){
     kCheckTotalRamSize();
     kTerminalSetCursorPos(45, wCursorY++);
     kprintf("Pass], Size = %d MB\n", kGetTotalRamSize());
+
+    kInitializePIT(1, FALSE);
 
     kprintf("%s", "Start Interrupt.............................[    ]");
     kInitializePIC();

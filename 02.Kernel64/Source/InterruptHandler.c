@@ -3,6 +3,7 @@
 #include "PIC.h"
 #include "Keyboard.h"
 #include "TextModeTerminal.h"
+#include "string.h"
 
 void kCommonExceptionHandler(int iVectorNumber, QWORD qwErrorCode){
     char vcBuffer[]="[VEC:  ]";
@@ -17,13 +18,19 @@ void kCommonExceptionHandler(int iVectorNumber, QWORD qwErrorCode){
 
 void kCommonInterruptHandler(int iVectorNumber){
     static int g_iCommonInterruptCount=0;
-    kprintf("[INT:%d,%d\n", iVectorNumber, g_iCommonInterruptCount);
-
+    char vcBuffer[100];
+    ksprintf(vcBuffer, "[INT:%d,%d]", iVectorNumber, g_iCommonInterruptCount%10);
+    kTerminalPrintString(70, 0, vcBuffer);
+    g_iCommonInterruptCount++;
     kSendEOIToPIC(iVectorNumber-32);
 }
 
 void kTimerInterruptHandler(int iVectorNumber){
-    //kprintf("Timer Interrupt\n");
+    static int g_iCommonInterruptCount=0;
+    char vcBuffer[100];
+    ksprintf(vcBuffer, "[INT:%d,%d]", iVectorNumber, g_iCommonInterruptCount%10);
+    kTerminalPrintString(70, 0, vcBuffer);
+    g_iCommonInterruptCount++;
     kSendEOIToPIC(iVectorNumber-32);
 }
 

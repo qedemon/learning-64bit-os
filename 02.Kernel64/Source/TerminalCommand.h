@@ -9,5 +9,6 @@ void kTerminalCommandShutdown(const char* pcArgument);
 void kTerminalCommandWait(const char* pcArgument);
 void kTerminalShowDateAndTime(const char* pcArgument);
 void kTermianlMeasureCPUSpeed(const char* pcArgument);
+void kTerminalStartTimer(const char* pcArgument);
 
 #endif

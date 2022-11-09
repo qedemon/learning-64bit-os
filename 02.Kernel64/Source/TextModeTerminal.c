@@ -16,7 +16,8 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"shutdown", "Reboot PC", kTerminalCommandShutdown},
     {"wait", "wait milliseconds", kTerminalCommandWait},
     {"time", "show date and time", kTerminalShowDateAndTime},
-    {"cpuspeed", "measure cpu speed", kTermianlMeasureCPUSpeed}
+    {"cpuspeed", "measure cpu speed", kTermianlMeasureCPUSpeed},
+    {"settimer", "settimer 100(ms) 1(periodic)", kTerminalStartTimer}
 };
 
 void kTerminalClear(){
