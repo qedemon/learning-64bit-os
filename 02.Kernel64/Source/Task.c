@@ -18,8 +18,45 @@ void kInitializeTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointA
 
     pstTCB->stContext.vqRegister[TASK_RFLAGSOFFSET]|=0x0200;
 
-    pstTCB->qwID = qwID;
+    pstTCB->stLink.qwID = qwID;
     pstTCB->qwFlags=qwFlags;
     pstTCB->pvStackAddress=pvStackAddress;
     pstTCB->qwStackSize=qwStackSize;
+}
+
+static TCBPOOLMANAGER gs_stTCBPoolManager;
+
+void kInitializeTCBPool(){
+    int i;
+    kMemSet(&(gs_stTCBPoolManager), 0, sizeof(gs_stTCBPoolManager));
+    gs_stTCBPoolManager.pstStartAddress=(TCB*)TASK_TCBPOOLADDRESS;
+    kMemSet((char*)TASK_TCBPOOLADDRESS, 0, sizeof(TCB)*TASK_MAXCOUNT);
+    for(i=0; i<TASK_MAXCOUNT; i++){
+        gs_stTCBPoolManager.pstStartAddress[i].stLink.qwID=i;
+    }
+    gs_stTCBPoolManager.iMaxCount=TASK_MAXCOUNT;
+    gs_stTCBPoolManager.iAllocatedCount=1;
+}
+
+TCB* kAllocateTCB(){
+    TCB* pstEmptyTCB;
+    int i;
+    if(gs_stTCBPoolManager.iUseCount>=gs_stTCBPoolManager.iMaxCount)
+        return NULL;
+    for(i=0; i<gs_stTCBPoolManager.iMaxCount; i++){
+        if((gs_stTCBPoolManager.pstStartAddress[i].stLink.qwID>>32)==0){
+            pstEmptyTCB=&(gs_stTCBPoolManager.pstStartAddress[i]);
+            pstEmptyTCB->stLink.qwID==(((QWORD)gs_stTCBPoolManager.iAllocatedCount)<<32)|i;
+        }
+    }
+    gs_stTCBPoolManager.iUseCount++;
+    gs_stTCBPoolManager.iAllocatedCount++;
+    return pstEmptyTCB;
+}
+void kFreeTCB(QWORD qwID){
+    int i;
+    i=qwID&0xffffffffffffffff;
+    kMemSet(&(gs_stTCBPoolManager.pstStartAddress[i]), 0, sizeof(TCB));
+    gs_stTCBPoolManager.pstStartAddress[i].stLink.qwID=i;
+    gs_stTCBPoolManager.iUseCount--;
 }

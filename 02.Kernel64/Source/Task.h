@@ -1,6 +1,7 @@
 #ifndef TASK_H
 #define TASK_H
 #include "Type.h"
+#include "LinkedList.h"
 
 #define TASK_REGISTERCOUNT (5+19)
 #define TASK_REGISTERSIZE 8
@@ -31,6 +32,9 @@
 #define TASK_RSPOFFSET 22
 #define TASK_SSOFFSET 23
 
+#define TASK_TCBPOOLADDRESS 0x800000
+#define TASK_MAXCOUNT 1024
+
 #pragma pack(push, 1)
 typedef struct kContextStruct{
     QWORD vqRegister[TASK_REGISTERCOUNT];
@@ -38,14 +42,32 @@ typedef struct kContextStruct{
 #pragma pack(pop)
 
 typedef struct kTaskControlBlockStruct{
+    LISTLINK stLink;
     CONTEXT stContext;
-    QWORD qwID;
     QWORD qwFlags;
     void* pvStackAddress;
     QWORD qwStackSize;
 }TCB;
 
+typedef struct kTCBPoolManager{
+    TCB* pstStartAddress;
+    int iMaxCount;
+    int iUseCount;
+
+    int iAllocatedCount;
+}TCBPOOLMANAGER;
+
+typedef struct kSchedulerStruct{
+    TCB* pstRunningTask;
+    int iProcessorTime;
+    LIST stReadyList;
+}SCHEDULER;
+
 void kInitializeTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize);
 void kSwitchContext(CONTEXT* pstCurrentContext, CONTEXT* pstNextContext);
+
+void kInitializeTCBPool();
+TCB* kAllocateTCB();
+void kFreeTCB(QWORD qwID);
 
 #endif
