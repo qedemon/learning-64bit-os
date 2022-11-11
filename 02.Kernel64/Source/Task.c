@@ -92,19 +92,19 @@ void kAddTaskToReadyList(TCB* pstTCB){
 void kSchedule(){
     TCB* pstRunningTask, *pstNextTask;
     BOOL bPreviousFlag;
-    if(kGetListCount(gs_stScheduler.stReadyList)==0)
+    if(kGetListCount(&(gs_stScheduler.stReadyList))==0)
         return;
-    bPreviousFlag=kSetInterruptFlag(False);
+    bPreviousFlag=kSetInterruptFlag(FALSE);
     pstNextTask=kGetNextTaskToRun();
     if(pstNextTask==NULL){
         kSetInterruptFlag(bPreviousFlag);
         return;
     }
     pstRunningTask=gs_stScheduler.pstRunningTask;
-    kAddTaskToReadyList(pstRunningTCB);
+    kAddTaskToReadyList(pstRunningTask);
     gs_stScheduler.pstRunningTask=pstNextTask;
     kSwitchContext(&(pstRunningTask->stContext), &(pstNextTask->stContext));
 
     gs_stScheduler.iProcessorTime=TASK_PROCESSTIME;
-    kSetInterruptFlag(bPrevious);
+    kSetInterruptFlag(bPreviousFlag);
 }
