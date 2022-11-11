@@ -5,6 +5,7 @@
 #include "PIT.h"
 #include "RTC.h"
 #include "Task.h"
+#include "Type.h"
 
 void kTerminalCommandHelp(const char* pcArgument){
     TERMINALCOMMANDENTRY* pTerminalCmd;

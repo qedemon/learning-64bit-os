@@ -1,6 +1,7 @@
 #include "Task.h"
 #include "Utility.h"
 #include "Descriptor.h"
+#include "LinkedList.h"
 
 void kInitializeTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize){
     kMemSet(pstTCB->stContext.vqRegister, 0, sizeof(pstTCB->stContext.vqRegister));
@@ -59,4 +60,30 @@ void kFreeTCB(QWORD qwID){
     kMemSet(&(gs_stTCBPoolManager.pstStartAddress[i]), 0, sizeof(TCB));
     gs_stTCBPoolManager.pstStartAddress[i].stLink.qwID=i;
     gs_stTCBPoolManager.iUseCount--;
+}
+
+static SCHEDULER gs_stScheduler;
+
+void kInitializeScheduler(){
+    kInitializeTCBPool();
+    kInitializeList(&(gs_stScheduler.stReadyList));
+    gs_stScheduler.pstRunningTask=kAllocateTCB();
+}
+
+void kSetRuningTask(TCB* pstTCB){
+    gs_stScheduler.pstRunningTask=pstTCB;
+}
+
+TCB* kGetRunningTask(){
+    return gs_stScheduler.pstRunningTask;
+}
+
+TCB* kGetNextTaskToRun(){
+    if(gs_stScheduler.stReadyList.iItemCount)
+        return NULL;
+    return (TCB*)kRemoveLinkFromHead(&(gs_stScheduler.stReadyList));
+}
+
+void kAddTaskToReadyList(TCB* pstTCB){
+    kAddLinkToTail(&(gs_stScheduler.stReadyList), pstTCB);
 }

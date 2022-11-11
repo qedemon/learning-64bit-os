@@ -71,4 +71,10 @@ void kInitializeTCBPool();
 TCB* kAllocateTCB();
 void kFreeTCB(QWORD qwID);
 
+void kInitializeScheduler();
+void kSetRunningTask(TCB* pstTCB);
+TCB* kGetRunningTask();
+TCB* kGetNextTaskToRun();
+void kAddTaskToReadyList(TCB* pstTCB);
+
 #endif
