@@ -1,3 +1,4 @@
+#include "Type.h"
 #include "Task.h"
 #include "Utility.h"
 #include "Descriptor.h"
@@ -86,4 +87,24 @@ TCB* kGetNextTaskToRun(){
 
 void kAddTaskToReadyList(TCB* pstTCB){
     kAddLinkToTail(&(gs_stScheduler.stReadyList), pstTCB);
+}
+
+void kSchedule(){
+    TCB* pstRunningTask, *pstNextTask;
+    BOOL bPreviousFlag;
+    if(kGetListCount(gs_stScheduler.stReadyList)==0)
+        return;
+    bPreviousFlag=kSetInterruptFlag(False);
+    pstNextTask=kGetNextTaskToRun();
+    if(pstNextTask==NULL){
+        kSetInterruptFlag(bPreviousFlag);
+        return;
+    }
+    pstRunningTask=gs_stScheduler.pstRunningTask;
+    kAddTaskToReadyList(pstRunningTCB);
+    gs_stScheduler.pstRunningTask=pstNextTask;
+    kSwitchContext(&(pstRunningTask->stContext), &(pstNextTask->stContext));
+
+    gs_stScheduler.iProcessorTime=TASK_PROCESSTIME;
+    kSetInterruptFlag(bPrevious);
 }

@@ -1,9 +1,13 @@
 #include "LinkedList.h"
 
-void kInitializeTask(LIST* pstList){
+void kInitializeList(LIST* pstList){
     pstList->iItemCount=0;
     pstList->pvHead=NULL;
     pstList->pvTail=NULL;
+}
+
+int kGetListCount(LIST* pstList){
+    return pstList->iItemCount;
 }
 
 void kAddLinkToTail(LIST* pstList, void* pvItem){

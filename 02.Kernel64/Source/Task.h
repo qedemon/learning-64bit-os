@@ -35,6 +35,8 @@
 #define TASK_TCBPOOLADDRESS 0x800000
 #define TASK_MAXCOUNT 1024
 
+#define TASK_PROCESSTIME 5
+
 #pragma pack(push, 1)
 typedef struct kContextStruct{
     QWORD vqRegister[TASK_REGISTERCOUNT];
@@ -76,5 +78,6 @@ void kSetRunningTask(TCB* pstTCB);
 TCB* kGetRunningTask();
 TCB* kGetNextTaskToRun();
 void kAddTaskToReadyList(TCB* pstTCB);
+void kSchedule();
 
 #endif
