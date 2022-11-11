@@ -18,7 +18,8 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"time", "show date and time", kTerminalCommandShowDateAndTime},
     {"cpuspeed", "measure cpu speed", kTermianlCommandMeasureCPUSpeed},
     {"settimer", "settimer 100(ms) 1(periodic)", kTerminalCommandStartTimer},
-    {"createTask", "Create Task", kTerminalCommandCreateTask}
+    {"createTask", "Create Task", kTerminalCommandCreateTask},
+    {"testList", "Test Linked List", kTerminalCommandTestLinkedList},
 };
 
 void kTerminalClear(){

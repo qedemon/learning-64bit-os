@@ -121,7 +121,7 @@ void kTestTask(){
 
 void kTerminalCommandCreateTask(const char* pcArgument){
     int i=0;
-    kInitializeTask(&(gs_stTaskControlBlock[1]), 1, 0, (QWORD) kTestTask, &(gs_vstStack), sizeof(gs_vstStack));
+    kInitializeTask(&(gs_stTaskControlBlock[1]), 1, 0, (QWORD) kTestTask, gs_vstStack, sizeof(gs_vstStack));
     while(1){
         char ch;
         i++;
@@ -130,5 +130,32 @@ void kTerminalCommandCreateTask(const char* pcArgument){
         if(ch=='q')
             break;
         kSwitchContext(&(gs_stTaskControlBlock[0].stContext), &(gs_stTaskControlBlock[1].stContext));
+    }
+}
+
+void kTerminalCommandTestLinkedList(const char* pcArgument){
+    LIST stLinkedList={0,};
+    LISTLINK links[5]={0,};
+    LISTLINK* pstLink;
+    int i;
+    stLinkedList.pvHead=0;
+    stLinkedList.pvTail=0;
+    stLinkedList.iItemCount=0;
+    for(i=0; i<5; i++){
+        links[i].qwID=i+1;
+        links[i].pvNext=NULL;
+        kAddLinkToTail(&stLinkedList, &links[i]);
+    }
+    kprintf("Links are added\n");
+    for(pstLink=stLinkedList.pvHead; pstLink!=NULL; pstLink=pstLink->pvNext){
+        kprintf("List ID : %d\n", pstLink->qwID);
+    }
+    kRemoveLink(&stLinkedList, 3);
+    kprintf("Links are removed\n");
+    while(1){
+        pstLink=kRemoveLinkFromHead(&stLinkedList);
+        if(pstLink==NULL)
+            break;
+        kprintf("List ID : %d\n", pstLink->qwID);
     }
 }

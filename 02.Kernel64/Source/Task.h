@@ -39,7 +39,6 @@
 typedef struct kContextStruct{
     QWORD vqRegister[TASK_REGISTERCOUNT];
 }CONTEXT;
-#pragma pack(pop)
 
 typedef struct kTaskControlBlockStruct{
     LISTLINK stLink;
@@ -62,6 +61,8 @@ typedef struct kSchedulerStruct{
     int iProcessorTime;
     LIST stReadyList;
 }SCHEDULER;
+
+#pragma pack(pop)
 
 void kInitializeTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize);
 void kSwitchContext(CONTEXT* pstCurrentContext, CONTEXT* pstNextContext);
