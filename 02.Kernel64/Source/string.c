@@ -175,10 +175,16 @@ int kHexToString(long lValue, char* pcDest){
         lValue=-lValue;
         i=1;
     }
-    for(; lValue!=0; i++){
-        char ch=lValue&0x0f;
-        pcDest[i]=(ch>=10)?(ch+'A'-10):(ch+'0');
-        lValue=lValue>>4;
+    if(lValue==0){
+        pcDest[i]='0';
+        i++;
+    }
+    else{
+        for(; lValue!=0; i++){
+            char ch=lValue&0x0f;
+            pcDest[i]=(ch>=10)?(ch+'A'-10):(ch+'0');
+            lValue=lValue>>4;
+        }
     }
     pcDest[i]=0;
     if(pcDest[0]=='-')

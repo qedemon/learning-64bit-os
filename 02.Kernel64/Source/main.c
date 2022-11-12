@@ -24,6 +24,11 @@ void main(){
     kTerminalSetCursorPos(45, wCursorY++);
     kprintf("Pass\n");
 
+    kprintf("%s", "TSS segment Load............................[    ]");
+    kLoadTSSR(GDT_KERNELTSSEGMENT);
+    kTerminalSetCursorPos(45, wCursorY++);
+    kprintf("Pass\n");
+
     kprintf("%s", "IDT Initialize..............................[    ]");
     kInitializeIDTTables();
     kLoadIDTR((QWORD) IDTR_STARTADDRESS);
@@ -34,11 +39,12 @@ void main(){
     kCheckTotalRamSize();
     kTerminalSetCursorPos(45, wCursorY++);
     kprintf("Pass], Size = %d MB\n", kGetTotalRamSize());
+   
 
     kprintf("TCB Pool And Scheduler Initialize.................[Pass]\n");
     wCursorY++;
     kInitializeScheduler();
-    kInitializePIT(MSTOCOUNT(1), TRUE);
+    kInitializePIT(MSTOCOUNT(1), FALSE);
 
     kprintf("%s", "Start Interrupt.............................[    ]");
     kInitializePIC();
@@ -53,16 +59,15 @@ void main(){
         kprintf("Pass\n");
     }
     else{
-        kprintf("Pass\n");
+        kprintf("Fail\n");
         while(1);
     }
 
     /*if(!kUpdateKeyboardLeds()){
         while(1);
     }*/
-
+    
     kTerminalSetCursorPos(0, wCursorY);
     kprintf("MINT64 OS Start\n");
-    
     kStartTerminal();
 }

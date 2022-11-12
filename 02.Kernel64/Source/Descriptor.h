@@ -41,7 +41,7 @@
 #define IDT_FLAGS_DPL3 0x06
 #define IDT_FLAGS_P 0x80
 #define IDT_FLAGS_IST0 0
-#define IDT_FLAGS_IST1 0
+#define IDT_FLAGS_IST1 1
 
 #define IDT_FLAGS_KERNEL (IDT_FLAGS_DPL0|IDT_FLAGS_P)
 #define IDT_FLAGS_USER (IDT_FLAGS_DPL3|IDT_FLAGS_P)
@@ -79,7 +79,7 @@ typedef struct kGDTEntry16Struct{
     BYTE bUpperFlagsAndUpperLimit;
     BYTE bMiddleBaseAddress1;
     DWORD dwUpperBaseAddress;
-    WORD dwReserved;    
+    DWORD dwReserved;    
 }GDTENTRY16;
 
 typedef struct kTSSDataStruct{

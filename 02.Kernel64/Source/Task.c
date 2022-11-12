@@ -3,6 +3,8 @@
 #include "Utility.h"
 #include "Descriptor.h"
 #include "LinkedList.h"
+#include "TextModeTerminal.h"
+#include "string.h"
 
 void kInitializeTask(TCB* pstTCB, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize){
     kMemSet(pstTCB->stContext.vqRegister, 0, sizeof(pstTCB->stContext.vqRegister));
@@ -47,16 +49,18 @@ TCB* kAllocateTCB(){
     for(i=0; i<gs_stTCBPoolManager.iMaxCount; i++){
         if((gs_stTCBPoolManager.pstStartAddress[i].stLink.qwID>>32)==0){
             pstEmptyTCB=&(gs_stTCBPoolManager.pstStartAddress[i]);
-            pstEmptyTCB->stLink.qwID==(((QWORD)gs_stTCBPoolManager.iAllocatedCount)<<32)|i;
+            pstEmptyTCB->stLink.qwID=(((QWORD)gs_stTCBPoolManager.iAllocatedCount)<<32)|i;
+            break;
         }
     }
     gs_stTCBPoolManager.iUseCount++;
     gs_stTCBPoolManager.iAllocatedCount++;
+    
     return pstEmptyTCB;
 }
 void kFreeTCB(QWORD qwID){
     int i;
-    i=qwID&0xffffffffffffffff;
+    i=qwID&0xFFFFFFFF;
     kMemSet(&(gs_stTCBPoolManager.pstStartAddress[i]), 0, sizeof(TCB));
     gs_stTCBPoolManager.pstStartAddress[i].stLink.qwID=i;
     gs_stTCBPoolManager.iUseCount--;
@@ -79,7 +83,7 @@ TCB* kGetRunningTask(){
 }
 
 TCB* kGetNextTaskToRun(){
-    if(gs_stScheduler.stReadyList.iItemCount)
+    if(gs_stScheduler.stReadyList.iItemCount==0)
         return NULL;
     return (TCB*)kRemoveLinkFromHead(&(gs_stScheduler.stReadyList));
 }
@@ -94,15 +98,19 @@ TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress){
     pstNewTask=kAllocateTCB();
     if(pstNewTask==NULL)
         return NULL;
-    pvStackAddress=(void*)(TASK_STACKPOOLADDRESS+pstNewTask->stLink.qwID*(TASK_STACKSIZE));
+    pvStackAddress=(void*)(TASK_STACKPOOLADDRESS+(pstNewTask->stLink.qwID&0xFFFFFFFF)*(TASK_STACKSIZE));
     kInitializeTask(pstNewTask, qwFlag, qwEntryPointAddress, pvStackAddress, TASK_STACKSIZE);
+    kAddTaskToReadyList(pstNewTask);
+    kprintf("0x%q -> 0x%q\n", pstNewTask, qwEntryPointAddress);
+    return pstNewTask;
 }
 
 void kSchedule(){
     TCB* pstRunningTask, *pstNextTask;
     BOOL bPreviousFlag;
-    if(kGetListCount(&(gs_stScheduler.stReadyList))==0)
+    if(kGetListCount(&(gs_stScheduler.stReadyList))==0){
         return;
+    }
     bPreviousFlag=kSetInterruptFlag(FALSE);
     pstNextTask=kGetNextTaskToRun();
     if(pstNextTask==NULL){
@@ -118,22 +126,24 @@ void kSchedule(){
     kSetInterruptFlag(bPreviousFlag);
 }
 
-BOOL kScheduleInInterupt(){
+BOOL kScheduleInInterupt(QWORD qwStackBaseAddress){
     TCB* pstRuningTask, *pstNextTask;
     char* pcContextAddress;
+    char vcBuffer[20];
 
     pstNextTask=kGetNextTaskToRun();
     if(pstNextTask==NULL){
         return FALSE;
     }
-    pcContextAddress=(char*)(IST_STARTADDRESS+IST_SIZE-sizeof(CONTEXT));
+    pcContextAddress=(char*)(qwStackBaseAddress-sizeof(CONTEXT));
+    kprintf("0x%q, 0x%q\n", &(((CONTEXT*)pcContextAddress)->vqRegister[TASK_RBPOFFSET]), qwStackBaseAddress);
     pstRuningTask=gs_stScheduler.pstRunningTask;
     kMemCpy(&(pstRuningTask->stContext), pcContextAddress, sizeof(CONTEXT));
     kAddLinkToTail(&(gs_stScheduler.stReadyList), pstRuningTask);
 
     gs_stScheduler.pstRunningTask=pstNextTask;
-    kMemCpy(pcContextAddress, &(pstNextTask), sizeof(CONTEXT));
-
+    kMemCpy(pcContextAddress, &(pstNextTask->stContext), sizeof(CONTEXT));
+    
     gs_stScheduler.iProcessorTime=TASK_PROCESSTIME;
     return TRUE;
 }

@@ -26,18 +26,21 @@ void kCommonInterruptHandler(int iVectorNumber){
     kSendEOIToPIC(iVectorNumber-32);
 }
 
-void kTimerInterruptHandler(int iVectorNumber){
+void kTimerInterruptHandler(int iVectorNumber, QWORD qwStackBaseAddress){
     static int g_iTimerInterruptCount=0;
     char vcBuffer[100];
-    ksprintf(vcBuffer, "[INT:%d,%d]", iVectorNumber, g_iTimerInterruptCount%10);
-    kTerminalPrintString(70, 0, vcBuffer);
     g_iTimerInterruptCount++;
     kSendEOIToPIC(iVectorNumber-32);
 
-    kDecreaseProcessorTime();
+    kprintf("stack bp : 0x%q", qwStackBaseAddress);
+
+    /*kDecreaseProcessorTime();
     if(kIsProcessorTimeExpired()){
-        kScheduleInInterupt();
-    }
+        if(kScheduleInInterupt(qwStackBaseAddress)==FALSE){
+            ksprintf(vcBuffer, "NULL %d", g_iTimerInterruptCount%10);
+            kTerminalPrintString(70, 0, vcBuffer);
+        }
+    }*/
 }
 
 void kKeyboardInterruptHandler(int iVectorNumber){

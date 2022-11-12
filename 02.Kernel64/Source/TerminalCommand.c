@@ -18,6 +18,7 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"cpuspeed", "measure cpu speed", kTermianlCommandMeasureCPUSpeed},
     {"settimer", "settimer 100(ms) 1(periodic)", kTerminalCommandStartTimer},
     {"createtask", "Create Task", kTerminalCommandCreateTask},
+    {"testLink", "testLink", kTerminalCommandTestLinkedList},
 };
 
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** ppstTerminalCmd, int* piSpaceIndex){
@@ -154,29 +155,53 @@ static TCB gs_stTaskControlBlock[2]={0,};
 static QWORD gs_vstStack[1024]={0,};
 
 void kTestTask1(){
-    int i=0;
+    BYTE bData='A';
+    int i=0, iX=0, iY=0, iMargin;
+    CHARACTER* pstScreen=(CHARACTER*) TERMINAL_VIDEOMEMORYADDRESS;
+    TCB* pstRunningTask;
+    pstRunningTask=kGetRunningTask();
+    iMargin=(pstRunningTask->stLink.qwID&0xFFFFFFFF)%10;
+    iX=0;
+    iY=0;
+    kprintf("offset = %d \n", iMargin);
     while(1){
-        i++;
-        kprintf("[%d] This message is from kTestTask. Press any key to continue\n", i);
-        kGetChar();
-        kSwitchContext(&(gs_stTaskControlBlock[1].stContext), &(gs_stTaskControlBlock[0].stContext));
+        switch(i){
+            case 0:
+                iX++;
+                if(iX>=(TERMINAL_WIDTH-1-iMargin)){
+                    i=1;
+                }
+                break;
+            case 1:
+                iY++;
+                if(iY>=(TERMINAL_HEIGHT-iMargin)){
+                    i=2;
+                }
+                break;
+            case 2:
+                iX--;
+                if(iX<iMargin){
+                    i=3;
+                }
+                break;
+            case 3:
+                iY--;
+                if(iY<iMargin){
+                    i=0;
+                }
+                break;
+        }
+        pstScreen[iY*TERMINAL_WIDTH+iX].bChar=bData;
+        pstScreen[iY*TERMINAL_WIDTH+iX].bAttrib=bData&0x0F;
+        bData++;
+        //kSchedule();
     }
 }
 
 void kTerminalCommandCreateTask(const char* pcArgument){
-    /*int i=0;
-    kInitializeTask(&(gs_stTaskControlBlock[1]), 1, 0, (QWORD) kTestTask, gs_vstStack, sizeof(gs_vstStack));
-    while(1){
-        char ch;
-        i++;
-        kprintf("[%d] This message is from kTerminalCommandCreateTask. Press any key to continue\n", i);
-        ch=kGetChar();
-        if(ch=='q')
-            break;
-        kSwitchContext(&(gs_stTaskControlBlock[0].stContext), &(gs_stTaskControlBlock[1].stContext));
-    }*/
+    kCreateTask(0, (QWORD) kTestTask1);
 }
-/*
+
 void kTerminalCommandTestLinkedList(const char* pcArgument){
     LIST stLinkedList={0,};
     LISTLINK links[5]={0,};
@@ -203,4 +228,3 @@ void kTerminalCommandTestLinkedList(const char* pcArgument){
         kprintf("List ID : %d\n", pstLink->qwID);
     }
 }
-*/
