@@ -26,6 +26,22 @@ void kCommonInterruptHandler(int iVectorNumber){
     kSendEOIToPIC(iVectorNumber-32);
 }
 
+void kTimerInterruptHandler(int iVectorNumber, QWORD qwBP){
+
+    char vcBuffer[]="[tNT:  ,  ]";
+    static int g_iCommonInterruptCout=0;
+
+    BYTE scanCode;
+
+    g_iCommonInterruptCout++;
+    vcBuffer[5]=iVectorNumber/10+'0';
+    vcBuffer[6]=iVectorNumber%10+'0';
+    vcBuffer[8]=(qwBP>=10)?(qwBP/10+'0'):' ';
+    vcBuffer[9]=qwBP%10+'0';
+    kPrintString(0, 0, vcBuffer);
+
+    kSendEOIToPIC(iVectorNumber-32);
+}
 
 void kKeyboardInterruptHandler(int iVectorNumber){
 #ifdef DEBUG
