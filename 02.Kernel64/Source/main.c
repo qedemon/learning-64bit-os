@@ -7,6 +7,7 @@
 #include "PIC.h"
 #include "PIT.h"
 #include "string.h"
+#include "Task.h"
 
 void main(){
     WORD wCursorX, wCursorY;
@@ -34,7 +35,10 @@ void main(){
     kTerminalSetCursorPos(45, wCursorY++);
     kprintf("Pass], Size = %d MB\n", kGetTotalRamSize());
 
-    kInitializePIT(1, FALSE);
+    kprintf("TCB Pool And Scheduler Initialize.................[Pass]");
+    wCursorY++;
+    kInitializeScheduler();
+    kInitializePIT(MSTOCOUNT(1), TRUE);
 
     kprintf("%s", "Start Interrupt.............................[    ]");
     kInitializePIC();
