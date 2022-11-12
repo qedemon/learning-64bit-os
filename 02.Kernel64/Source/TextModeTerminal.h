@@ -41,19 +41,6 @@ typedef struct kTextTerminalManager{
     BYTE bAttrib;
 }TERMINALMANAGER;
 
-typedef void(*TERMINALCOMMANDFUNCTION)(const char* pcArgument);
-typedef struct kTerminalCommandEntryStructure{
-    char* pcCommand;
-    char* pcHelp;
-    TERMINALCOMMANDFUNCTION pfFunction;
-}TERMINALCOMMANDENTRY;
-
-typedef struct kArgumentListStruct{
-    const char* pcBuffer;
-    int iLength;
-    int iCurrentIndex;
-}ARGUMENTLIST;
-
 void kTerminalClear();
 BYTE kTerminalGetAttribute();
 void kTerminalSetAttribute(BYTE bAttrib);
@@ -72,10 +59,6 @@ char kGetChar();
 
 void kStartTerminal();
 
-void kInitializeArgumentList(ARGUMENTLIST* pstArgumentList, const char* pcBuffer);
-int kGetNextArgumnet(ARGUMENTLIST* pstArgumentList, char* pcArgument);
-
-void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** pstTerminalCmd, int* piSpaceIndex);
 void kTerminalExecuteCommand(const char* pcCommandBuffer);
 
 TERMINALCOMMANDENTRY* kTerminalGetCMDEntry(int iIndex);
