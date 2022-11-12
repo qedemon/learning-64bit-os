@@ -15,6 +15,7 @@ void main(){
     kPrintString(0, 12, "GDT Initialize And Switch for IA-32e Mode...[    ]");
     kInitializeGDTTableAndTSS();    
     kLoadGDTR((QWORD) GDTR_STARTADDRESS);
+    kLoadTSSR((WORD) GDT_KERNELTSSEGMENT);
     kPrintString(45, 12, "Pass");
 
     kPrintString(0, 13, "IDT Initialize..............................[    ]");
