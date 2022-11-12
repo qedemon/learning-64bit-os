@@ -150,9 +150,15 @@ int kDecimalToString(long lValue, char* pcDest){
         lValue=-lValue;
         i=1;
     }
-    for(; lValue!=0; i++){
-        pcDest[i]=lValue%10+'0';
-        lValue=lValue/10;
+    if(i==0){
+        pcDest[i]='0';
+        i++;
+    }
+    else{
+        for(; lValue!=0; i++){
+            pcDest[i]=lValue%10+'0';
+            lValue=lValue/10;
+        }
     }
     pcDest[i]=0;
     if(pcDest[0]=='-')

@@ -35,7 +35,7 @@ void main(){
     kTerminalSetCursorPos(45, wCursorY++);
     kprintf("Pass], Size = %d MB\n", kGetTotalRamSize());
 
-    kprintf("TCB Pool And Scheduler Initialize.................[Pass]");
+    kprintf("TCB Pool And Scheduler Initialize.................[Pass]\n");
     wCursorY++;
     kInitializeScheduler();
     kInitializePIT(MSTOCOUNT(1), TRUE);
