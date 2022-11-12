@@ -61,6 +61,5 @@ void kStartTerminal();
 
 void kTerminalExecuteCommand(const char* pcCommandBuffer);
 
-TERMINALCOMMANDENTRY* kTerminalGetCMDEntry(int iIndex);
 
 #endif

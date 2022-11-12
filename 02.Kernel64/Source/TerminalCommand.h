@@ -17,8 +17,8 @@ typedef struct kArgumentListStruct{
 void kInitializeArgumentList(ARGUMENTLIST* pstArgumentList, const char* pcBuffer);
 int kGetNextArgumnet(ARGUMENTLIST* pstArgumentList, char* pcArgument);
 
+TERMINALCOMMANDENTRY* kTerminalGetCMDEntry(int iIndex);
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** pstTerminalCmd, int* piSpaceIndex);
-
 
 void kTerminalCommandHelp(const char* pcArgument);
 void kTerminalCommandClear(const char* pcArgument);
