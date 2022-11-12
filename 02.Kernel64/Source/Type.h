@@ -16,7 +16,7 @@
 typedef struct kCharStruct{
     BYTE bChar;
     BYTE bAttrib;
-}kCharStruct;
+}CHARACTER;
 #pragma pack(pop)
 
 #endif

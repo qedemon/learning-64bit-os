@@ -11,7 +11,7 @@ static TERMINALMANAGER gs_stTerminalManager={0,};
 
 void kTerminalClear(){
     int i;
-    kCharStruct* pVGAData=(kCharStruct*) TERMINAL_VIDEOMEMORYADDRESS;
+    CHARACTER* pVGAData=(CHARACTER*) TERMINAL_VIDEOMEMORYADDRESS;
     for(i=0; i<TERMINAL_WIDTH*TERMINAL_HEIGHT; i++){
         pVGAData->bChar=0;
         pVGAData++;
@@ -26,7 +26,7 @@ BYTE kTerminalGetAttribute(){
 void kTerminalSetAttribute(BYTE bAttrib){
     int i;
     gs_stTerminalManager.bAttrib=bAttrib;
-    kCharStruct* pVGAData=(kCharStruct*) TERMINAL_VIDEOMEMORYADDRESS;
+    CHARACTER* pVGAData=(CHARACTER*) TERMINAL_VIDEOMEMORYADDRESS;
     for(i=0; i<TERMINAL_WIDTH*TERMINAL_HEIGHT; i++){
         pVGAData->bAttrib=bAttrib;
         pVGAData++;
@@ -104,9 +104,9 @@ void kUpdateCursorPos(){
 
 void kTerminalScrollUp(){
     int i;
-    kCharStruct* pVGAData=(kCharStruct*)TERMINAL_VIDEOMEMORYADDRESS;
+    CHARACTER* pVGAData=(CHARACTER*)TERMINAL_VIDEOMEMORYADDRESS;
     for(i=1; i<TERMINAL_HEIGHT; i++){
-        kMemCpy(pVGAData, ((char*) pVGAData)+TERMINAL_WIDTH*sizeof(kCharStruct), TERMINAL_WIDTH*sizeof(kCharStruct));
+        kMemCpy(pVGAData, ((char*) pVGAData)+TERMINAL_WIDTH*sizeof(CHARACTER), TERMINAL_WIDTH*sizeof(CHARACTER));
         pVGAData+=TERMINAL_WIDTH;
     }
     for(i=0; i<TERMINAL_WIDTH; i++){
@@ -117,7 +117,7 @@ void kTerminalScrollUp(){
 
 int kTerminalPrintString(WORD iCursorX, WORD iCursorY, const char* str){
     int i, iOffset;
-    kCharStruct* pVGAData=(kCharStruct*)TERMINAL_VIDEOMEMORYADDRESS;
+    CHARACTER* pVGAData=(CHARACTER*)TERMINAL_VIDEOMEMORYADDRESS;
     iOffset=iCursorX+iCursorY*TERMINAL_WIDTH;
     for(i=0; str[i]!=0; i++){
         if(str[i]=='\n'){

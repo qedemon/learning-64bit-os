@@ -30,6 +30,6 @@ void kTerminalCommandShowDateAndTime(const char* pcArgument);
 void kTermianlCommandMeasureCPUSpeed(const char* pcArgument);
 void kTerminalCommandStartTimer(const char* pcArgument);
 void kTerminalCommandCreateTask(const char* pcArgument);
-void kTerminalCommandTestLinkedList(const char* pcArgument);
+//void kTerminalCommandTestLinkedList(const char* pcArgument);
 
 #endif

@@ -17,8 +17,7 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"time", "show date and time", kTerminalCommandShowDateAndTime},
     {"cpuspeed", "measure cpu speed", kTermianlCommandMeasureCPUSpeed},
     {"settimer", "settimer 100(ms) 1(periodic)", kTerminalCommandStartTimer},
-    {"createTask", "Create Task", kTerminalCommandCreateTask},
-    {"testList", "Test Linked List", kTerminalCommandTestLinkedList},
+    {"createtask", "Create Task", kTerminalCommandCreateTask},
 };
 
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** ppstTerminalCmd, int* piSpaceIndex){
@@ -154,7 +153,7 @@ void kTerminalCommandStartTimer(const char* pcArgument){
 static TCB gs_stTaskControlBlock[2]={0,};
 static QWORD gs_vstStack[1024]={0,};
 
-void kTestTask(){
+void kTestTask1(){
     int i=0;
     while(1){
         i++;
@@ -177,7 +176,7 @@ void kTerminalCommandCreateTask(const char* pcArgument){
         kSwitchContext(&(gs_stTaskControlBlock[0].stContext), &(gs_stTaskControlBlock[1].stContext));
     }*/
 }
-
+/*
 void kTerminalCommandTestLinkedList(const char* pcArgument){
     LIST stLinkedList={0,};
     LISTLINK links[5]={0,};
@@ -204,3 +203,4 @@ void kTerminalCommandTestLinkedList(const char* pcArgument){
         kprintf("List ID : %d\n", pstLink->qwID);
     }
 }
+*/
