@@ -6,6 +6,50 @@
 #include "RTC.h"
 #include "Task.h"
 
+static TERMINALCOMMANDENTRY gs_stCommandList[]={
+    {"help", "Show Help", kTerminalCommandHelp},
+    {"cls", "Clear Screen", kTerminalCommandClear},
+    {"totalram", "Show Total RAM Size", kTerminalCommandShowTotalRamSize},
+    {"strtod", "String to Decimal/Hex Convert", kTerminalCommandStringToDeciHexConvert},
+    {"shutdown", "Reboot PC", kTerminalCommandShutdown},
+    {"wait", "wait milliseconds", kTerminalCommandWait},
+    {"time", "show date and time", kTerminalCommandShowDateAndTime},
+    {"cpuspeed", "measure cpu speed", kTermianlCommandMeasureCPUSpeed},
+    {"settimer", "settimer 100(ms) 1(periodic)", kTerminalCommandStartTimer},
+    {"createTask", "Create Task", kTerminalCommandCreateTask},
+    {"testList", "Test Linked List", kTerminalCommandTestLinkedList},
+};
+
+void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** ppstTerminalCmd, int* piSpaceIndex){
+    int i, iSpaceIndex, iCount;
+    int iCommandBufferLen=kstrlen(pcCommandBuffer);
+    *ppstTerminalCmd=NULL;
+    *piSpaceIndex=0;
+    for(iSpaceIndex=0; iSpaceIndex<iCommandBufferLen; iSpaceIndex++){
+        if(pcCommandBuffer[iSpaceIndex]==' ')
+            break;
+    }
+    iCount=sizeof(gs_stCommandList)/sizeof(TERMINALCOMMANDENTRY);
+    for(i=0; i<iCount; i++){
+        if(kstrlen(gs_stCommandList[i].pcCommand)==iSpaceIndex){
+            if(kMemCmp(gs_stCommandList[i].pcCommand, pcCommandBuffer, iSpaceIndex)==0){
+                if(ppstTerminalCmd!=NULL)
+                    *ppstTerminalCmd = &(gs_stCommandList[i]);
+                if(piSpaceIndex!=NULL)
+                    *piSpaceIndex=iSpaceIndex;
+            }
+        }
+    }
+}
+
+
+TERMINALCOMMANDENTRY* kTerminalGetCMDEntry(int iIndex){
+    if(iIndex>=sizeof(gs_stCommandList)/sizeof(TERMINALCOMMANDENTRY)){
+        return NULL;
+    }
+    return &(gs_stCommandList[iIndex]);
+}
+
 void kTerminalCommandHelp(const char* pcArgument){
     TERMINALCOMMANDENTRY* pTerminalCmd;
     int i;
@@ -120,8 +164,13 @@ void kTestTask(){
 }
 
 void kTerminalCommandCreateTask(const char* pcArgument){
+<<<<<<< HEAD
     int i=0;
     kInitializeTask(&(gs_stTaskControlBlock[1]), 1, 0, (QWORD) kTestTask, &(gs_vstStack), sizeof(gs_vstStack));
+=======
+    /*int i=0;
+    kInitializeTask(&(gs_stTaskControlBlock[1]), 1, 0, (QWORD) kTestTask, gs_vstStack, sizeof(gs_vstStack));
+>>>>>>> a705e94 (move terminal command data structures to terminalcommand.h)
     while(1){
         char ch;
         i++;
@@ -130,5 +179,35 @@ void kTerminalCommandCreateTask(const char* pcArgument){
         if(ch=='q')
             break;
         kSwitchContext(&(gs_stTaskControlBlock[0].stContext), &(gs_stTaskControlBlock[1].stContext));
+<<<<<<< HEAD
+=======
+    }*/
+}
+
+void kTerminalCommandTestLinkedList(const char* pcArgument){
+    LIST stLinkedList={0,};
+    LISTLINK links[5]={0,};
+    LISTLINK* pstLink;
+    int i;
+    stLinkedList.pvHead=0;
+    stLinkedList.pvTail=0;
+    stLinkedList.iItemCount=0;
+    for(i=0; i<5; i++){
+        links[i].qwID=i+1;
+        links[i].pvNext=NULL;
+        kAddLinkToTail(&stLinkedList, &links[i]);
+    }
+    kprintf("Links are added\n");
+    for(pstLink=stLinkedList.pvHead; pstLink!=NULL; pstLink=pstLink->pvNext){
+        kprintf("List ID : %d\n", pstLink->qwID);
+    }
+    kRemoveLink(&stLinkedList, 3);
+    kprintf("Links are removed\n");
+    while(1){
+        pstLink=kRemoveLinkFromHead(&stLinkedList);
+        if(pstLink==NULL)
+            break;
+        kprintf("List ID : %d\n", pstLink->qwID);
+>>>>>>> a705e94 (move terminal command data structures to terminalcommand.h)
     }
 }
