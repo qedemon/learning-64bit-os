@@ -53,9 +53,9 @@ void main(){
         while(1);
     }
 
-    if(!kUpdateKeyboardLeds()){
+    /*if(!kUpdateKeyboardLeds()){
         while(1);
-    }
+    }*/
 
     kTerminalSetCursorPos(0, wCursorY);
     kprintf("MINT64 OS Start\n");

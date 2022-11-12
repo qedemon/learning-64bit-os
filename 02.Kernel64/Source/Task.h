@@ -6,7 +6,6 @@
 #define TASK_REGISTERCOUNT (5+19)
 #define TASK_REGISTERSIZE 8
 
-
 #define TASK_GSOFFSET 0
 #define TASK_FSOFFSET 1
 #define TASK_ESOFFSET 2
@@ -34,6 +33,9 @@
 
 #define TASK_TCBPOOLADDRESS 0x800000
 #define TASK_MAXCOUNT 1024
+
+#define TASK_STACKPOOLADDRESS (TASK_TCBPOOLADDRESS+TASK_MAXCOUNT*sizeof(TCB))
+#define TASK_STACKSIZE 8192
 
 #define TASK_PROCESSTIME 5
 
@@ -66,12 +68,14 @@ typedef struct kSchedulerStruct{
 
 #pragma pack(pop)
 
-void kInitializeTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize);
+void kInitializeTask(TCB* pstTCB, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize);
 void kSwitchContext(CONTEXT* pstCurrentContext, CONTEXT* pstNextContext);
 
 void kInitializeTCBPool();
 TCB* kAllocateTCB();
 void kFreeTCB(QWORD qwID);
+
+TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress);
 
 void kInitializeScheduler();
 void kSetRunningTask(TCB* pstTCB);
@@ -79,5 +83,9 @@ TCB* kGetRunningTask();
 TCB* kGetNextTaskToRun();
 void kAddTaskToReadyList(TCB* pstTCB);
 void kSchedule();
+BOOL kScheduleInInterupt();
+void kDecreaseProcessorTime();
+BOOL kIsProcessorTimeExpired();
+
 
 #endif
