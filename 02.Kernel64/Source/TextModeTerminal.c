@@ -8,6 +8,18 @@
 #include "TerminalCommand.h"
 
 static TERMINALMANAGER gs_stTerminalManager={0,};
+static TERMINALCOMMANDENTRY gs_stCommandList[]={
+    {"help", "Show Help", kTerminalCommandHelp},
+    {"cls", "Clear Screen", kTerminalCommandClear},
+    {"totalram", "Show Total RAM Size", kTerminalCommandShowTotalRamSize},
+    {"strtod", "String to Decimal/Hex Convert", kTerminalCommandStringToDeciHexConvert},
+    {"shutdown", "Reboot PC", kTerminalCommandShutdown},
+    {"wait", "wait milliseconds", kTerminalCommandWait},
+    {"time", "show date and time", kTerminalCommandShowDateAndTime},
+    {"cpuspeed", "measure cpu speed", kTermianlCommandMeasureCPUSpeed},
+    {"settimer", "settimer 100(ms) 1(periodic)", kTerminalCommandStartTimer},
+    {"createTask", "Create Task", kTerminalCommandCreateTask}
+};
 
 void kTerminalClear(){
     int i;
@@ -200,6 +212,28 @@ void kStartTerminal(){
     }
 }
 
+void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** ppstTerminalCmd, int* piSpaceIndex){
+    int i, iSpaceIndex, iCount;
+    int iCommandBufferLen=kstrlen(pcCommandBuffer);
+    *ppstTerminalCmd=NULL;
+    *piSpaceIndex=0;
+    for(iSpaceIndex=0; iSpaceIndex<iCommandBufferLen; iSpaceIndex++){
+        if(pcCommandBuffer[iSpaceIndex]==' ')
+            break;
+    }
+    iCount=sizeof(gs_stCommandList)/sizeof(TERMINALCOMMANDENTRY);
+    for(i=0; i<iCount; i++){
+        if(kstrlen(gs_stCommandList[i].pcCommand)==iSpaceIndex){
+            if(kMemCmp(gs_stCommandList[i].pcCommand, pcCommandBuffer, iSpaceIndex)==0){
+                if(ppstTerminalCmd!=NULL)
+                    *ppstTerminalCmd = &(gs_stCommandList[i]);
+                if(piSpaceIndex!=NULL)
+                    *piSpaceIndex=iSpaceIndex;
+            }
+        }
+    }
+}
+
 void kTerminalExecuteCommand(const char* pcCommandBuffer){
     TERMINALCOMMANDENTRY* pstCommandEntry;
     int iSpaceIndex;
@@ -209,4 +243,11 @@ void kTerminalExecuteCommand(const char* pcCommandBuffer){
     }
     else
         kprintf("%s is not found.\n", pcCommandBuffer);
+}
+
+TERMINALCOMMANDENTRY* kTerminalGetCMDEntry(int iIndex){
+    if(iIndex>=sizeof(gs_stCommandList)/sizeof(TERMINALCOMMANDENTRY)){
+        return NULL;
+    }
+    return &(gs_stCommandList[iIndex]);
 }
