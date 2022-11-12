@@ -4,6 +4,7 @@
 #include "Keyboard.h"
 #include "TextModeTerminal.h"
 #include "string.h"
+#include "Task.h"
 
 void kCommonExceptionHandler(int iVectorNumber, QWORD qwErrorCode){
     char vcBuffer[]="[VEC:  ]";
@@ -26,12 +27,17 @@ void kCommonInterruptHandler(int iVectorNumber){
 }
 
 void kTimerInterruptHandler(int iVectorNumber){
-    static int g_iCommonInterruptCount=0;
+    static int g_iTimerInterruptCount=0;
     char vcBuffer[100];
-    ksprintf(vcBuffer, "[INT:%d,%d]", iVectorNumber, g_iCommonInterruptCount%10);
+    ksprintf(vcBuffer, "[INT:%d,%d]", iVectorNumber, g_iTimerInterruptCount%10);
     kTerminalPrintString(70, 0, vcBuffer);
-    g_iCommonInterruptCount++;
+    g_iTimerInterruptCount++;
     kSendEOIToPIC(iVectorNumber-32);
+
+    kDecreaseProcessorTime();
+    if(kIsProcessorTimeExpired()){
+        kScheduleInInterupt();
+    }
 }
 
 void kKeyboardInterruptHandler(int iVectorNumber){

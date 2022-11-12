@@ -4,7 +4,7 @@
 #include "Descriptor.h"
 #include "LinkedList.h"
 
-void kInitializeTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize){
+void kInitializeTask(TCB* pstTCB, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize){
     kMemSet(pstTCB->stContext.vqRegister, 0, sizeof(pstTCB->stContext.vqRegister));
     pstTCB->stContext.vqRegister[TASK_RSPOFFSET]=(QWORD)pvStackAddress+qwStackSize;
     pstTCB->stContext.vqRegister[TASK_RBPOFFSET]=(QWORD)pvStackAddress+qwStackSize;
@@ -20,7 +20,6 @@ void kInitializeTask(TCB* pstTCB, QWORD qwID, QWORD qwFlags, QWORD qwEntryPointA
 
     pstTCB->stContext.vqRegister[TASK_RFLAGSOFFSET]|=0x0200;
 
-    pstTCB->stLink.qwID = qwID;
     pstTCB->qwFlags=qwFlags;
     pstTCB->pvStackAddress=pvStackAddress;
     pstTCB->qwStackSize=qwStackSize;
@@ -89,6 +88,16 @@ void kAddTaskToReadyList(TCB* pstTCB){
     kAddLinkToTail(&(gs_stScheduler.stReadyList), pstTCB);
 }
 
+TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress){
+    TCB* pstNewTask;
+    void* pvStackAddress;
+    pstNewTask=kAllocateTCB();
+    if(pstNewTask==NULL)
+        return NULL;
+    pvStackAddress=(void*)(TASK_STACKPOOLADDRESS+pstNewTask->stLink.qwID*(TASK_STACKSIZE));
+    kInitializeTask(pstNewTask, qwFlag, qwEntryPointAddress, pvStackAddress, TASK_STACKSIZE);
+}
+
 void kSchedule(){
     TCB* pstRunningTask, *pstNextTask;
     BOOL bPreviousFlag;
@@ -107,4 +116,32 @@ void kSchedule(){
 
     gs_stScheduler.iProcessorTime=TASK_PROCESSTIME;
     kSetInterruptFlag(bPreviousFlag);
+}
+
+BOOL kScheduleInInterupt(){
+    TCB* pstRuningTask, *pstNextTask;
+    char* pcContextAddress;
+
+    pstNextTask=kGetNextTaskToRun();
+    if(pstNextTask==NULL){
+        return FALSE;
+    }
+    pcContextAddress=(char*)(IST_STARTADDRESS+IST_SIZE-sizeof(CONTEXT));
+    pstRuningTask=gs_stScheduler.pstRunningTask;
+    kMemCpy(&(pstRuningTask->stContext), pcContextAddress, sizeof(CONTEXT));
+    kAddLinkToTail(&(gs_stScheduler.stReadyList), pstRuningTask);
+
+    gs_stScheduler.pstRunningTask=pstNextTask;
+    kMemCpy(pcContextAddress, &(pstNextTask), sizeof(CONTEXT));
+
+    gs_stScheduler.iProcessorTime=TASK_PROCESSTIME;
+    return TRUE;
+}
+
+void kDecreaseProcessorTime(){
+    if(gs_stScheduler.iProcessorTime>0)
+        gs_stScheduler.iProcessorTime--;
+}
+BOOL kIsProcessorTimeExpired(){
+    return (gs_stScheduler.iProcessorTime<=0);
 }
