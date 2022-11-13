@@ -40,7 +40,7 @@ void kInitializeGDTTableAndTSS(){
     kSetGDTEntry8(&(pstGDTTableEntry[0]), 0, 0, 0, 0, 0);
     kSetGDTEntry8(&(pstGDTTableEntry[1]), 0, 0xFFFF, GDT_FLAGS_LOWER_KERNELCODE,GDT_FLAGS_UPPER_CODE, GDT_TYPE_CODE);
     kSetGDTEntry8(&(pstGDTTableEntry[2]), 0, 0xFFFF, GDT_FLAGS_LOWER_KERNELDATA,GDT_FLAGS_UPPER_DATA, GDT_TYPE_DATA);
-    kSetGDTEntry16((GDTENTRY16*)&(pstGDTTableEntry[3]), (QWORD) pstTSS, sizeof(TSSEGMENT)-2, GDT_FLAGS_LOWER_TSS, GDT_FLAGS_UPPER_TSS, GDT_TYPE_TSS);
+    kSetGDTEntry16((GDTENTRY16*)&(pstGDTTableEntry[3]), (QWORD) pstTSS, sizeof(TSSEGMENT), GDT_FLAGS_LOWER_TSS, GDT_FLAGS_UPPER_TSS, GDT_TYPE_TSS);
     kInitializeTSS(pstTSS);
 }
 void kInitializeTSS(TSSEGMENT* pstTSS){
@@ -63,7 +63,7 @@ void kInitializeIDTTables(){
     for(i=0; i<IDT_MAXENTRYCOUNT; i++){
         kSetIDTEntry(&(pstEntry[i]), dummyHandler, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
     }
-    kSetIDTEntry(&(pstEntry[0]), kISRDivideZero, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
+    /*kSetIDTEntry(&(pstEntry[0]), kISRDivideZero, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
     kSetIDTEntry(&(pstEntry[1]), kISRDebug, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
     kSetIDTEntry(&(pstEntry[2]), kISRNMI, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
     kSetIDTEntry(&(pstEntry[3]), kISRBreakPoint, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
@@ -107,7 +107,7 @@ void kInitializeIDTTables(){
     kSetIDTEntry(&(pstEntry[47]), kISRHDD2, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
     for(i=48; i<IDT_MAXENTRYCOUNT; i++){
         kSetIDTEntry(&(pstEntry[i]), kISRETCInterrupt, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
-    }
+    }*/
 }
 
 void kSetIDTEntry(IDTENTRY* pstEntry, void* pvHandler, WORD wSegmentSelector, BYTE bIST, BYTE bFlags, BYTE bGateType){
@@ -115,8 +115,8 @@ void kSetIDTEntry(IDTENTRY* pstEntry, void* pvHandler, WORD wSegmentSelector, BY
     pstEntry->wSegmentSelctor=wSegmentSelector;
     pstEntry->bIST=bIST&0b111;
     pstEntry->bFlagsAndGateType=bFlags|bGateType;
-    pstEntry->wMiddleHandlerAddress=((QWORD)pvHandler>>16)&0xFFFF;
-    pstEntry->dwUpperHandlerAddress=((QWORD)pvHandler>>32);
+    pstEntry->wMiddleHandlerAddress=(((QWORD)pvHandler)>>16)&0xFFFF;
+    pstEntry->dwUpperHandlerAddress=(((QWORD)pvHandler)>>32);
     pstEntry->dwReserved=0;
 }
 
