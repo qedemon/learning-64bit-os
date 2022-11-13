@@ -83,7 +83,7 @@ TCB* kGetRunningTask();
 TCB* kGetNextTaskToRun();
 void kAddTaskToReadyList(TCB* pstTCB);
 void kSchedule();
-BOOL kScheduleInInterupt(QWORD RBP);
+BOOL kScheduleInInterupt(QWORD qwStackStartAddress);
 void kDecreaseProcessorTime();
 BOOL kIsProcessorTimeExpired();
 
