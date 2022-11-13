@@ -150,9 +150,15 @@ int kDecimalToString(long lValue, char* pcDest){
         lValue=-lValue;
         i=1;
     }
-    for(; lValue!=0; i++){
-        pcDest[i]=lValue%10+'0';
-        lValue=lValue/10;
+    if(lValue==0){
+        pcDest[i]='0';
+        i++;
+    }
+    else{
+        for(; lValue!=0; i++){
+            pcDest[i]=lValue%10+'0';
+            lValue=lValue/10;
+        }
     }
     pcDest[i]=0;
     if(pcDest[0]=='-')
@@ -162,17 +168,23 @@ int kDecimalToString(long lValue, char* pcDest){
     return i;
 }
 
-int kHexToString(long lValue, char* pcDest){
+int kHexToString(unsigned long lValue, char* pcDest){
     int i=0;
-    if(lValue<0){
+    /*if(lValue<0){
         pcDest[0]='-';
         lValue=-lValue;
         i=1;
+    }*/
+    if(lValue==0){
+        pcDest[i]='0';
+        i++;
     }
-    for(; lValue!=0; i++){
-        char ch=lValue&0x0f;
-        pcDest[i]=(ch>=10)?(ch+'A'-10):(ch+'0');
-        lValue=lValue>>4;
+    else{
+        for(; lValue!=0; i++){
+            char ch=lValue&0x0f;
+            pcDest[i]=(ch>=10)?(ch+'A'-10):(ch+'0');
+            lValue=lValue>>4;
+        }
     }
     pcDest[i]=0;
     if(pcDest[0]=='-')

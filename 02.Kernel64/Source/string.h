@@ -12,6 +12,6 @@ int kVSPrintf(char* pcBuffer, const char* pcFormatString, va_list ap);
 long kDecimalStringToLong(const char* str);
 QWORD kHexStringToQWORD(const char* str);
 int kDecimalToString(long lValue, char* pcDest);
-int kHexToString(long lValue, char* pcDest);
+int kHexToString(unsigned long lValue, char* pcDest);
 int kReverseString(char* str);
 #endif

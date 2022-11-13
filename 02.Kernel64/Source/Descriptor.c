@@ -1,6 +1,7 @@
 #include "Utility.h"
 #include "Descriptor.h"
 #include "ISR.h"
+#include "TextModeTerminal.h"
 
 void kSetGDTEntry8(GDTENTRY8* pstEntry, DWORD dwBaseAddress, DWORD dwLimit, BYTE bLowerFlags, BYTE bUpperFlags, BYTE bType){
     pstEntry->wLowerLimit=dwLimit&0xFFFF;
@@ -14,19 +15,22 @@ void kSetGDTEntry8(GDTENTRY8* pstEntry, DWORD dwBaseAddress, DWORD dwLimit, BYTE
 void kSetGDTEntry16(GDTENTRY16* pstEntry, QWORD qwBaseAddress, DWORD dwLimit, BYTE bLowerFlags, BYTE bUpperFlags, BYTE bType){
     pstEntry->wLowerLimit=dwLimit&0xFFFF;
     pstEntry->wLowerBaseAddress=qwBaseAddress&0xFFFF;
-    pstEntry->bMiddleBaseAddress0=(dwLimit>>16)&0xFF;
+    pstEntry->bMiddleBaseAddress0=(qwBaseAddress>>16)&0xFF;
     pstEntry->bLowerFlagsAndType=bType|bLowerFlags;
     pstEntry->bUpperFlagsAndUpperLimit=((dwLimit>>16)&0xFF)|bUpperFlags;
     pstEntry->bMiddleBaseAddress1=(qwBaseAddress>>24)&0xFF;
-    pstEntry->dwUpperBaseAddress=(qwBaseAddress>>32)&0xFFFFFFFF;
+    pstEntry->dwUpperBaseAddress=(qwBaseAddress>>32);
     pstEntry->dwReserved=0;
 }
 
 void kInitializeGDTTableAndTSS(){
     GDTR* pstGDTR;
     GDTENTRY8 *pstGDTTableEntry;
-    GDTENTRY16 *pstTSSDescriptor;
     TSSEGMENT *pstTSS;
+#ifdef DESCRIPTOR_DEBUG
+    int i;
+    DWORD* tempP;
+#endif
 
     pstGDTR=(GDTR*)(GDTR_STARTADDRESS);
     pstGDTTableEntry=(GDTENTRY8*)(GDTR_STARTADDRESS+sizeof(GDTR));
@@ -40,29 +44,54 @@ void kInitializeGDTTableAndTSS(){
     kSetGDTEntry8(&(pstGDTTableEntry[1]), 0, 0xFFFF, GDT_FLAGS_LOWER_KERNELCODE,GDT_FLAGS_UPPER_CODE, GDT_TYPE_CODE);
     kSetGDTEntry8(&(pstGDTTableEntry[2]), 0, 0xFFFF, GDT_FLAGS_LOWER_KERNELDATA,GDT_FLAGS_UPPER_DATA, GDT_TYPE_DATA);
     kSetGDTEntry16((GDTENTRY16*)&(pstGDTTableEntry[3]), (QWORD) pstTSS, sizeof(TSSEGMENT), GDT_FLAGS_LOWER_TSS, GDT_FLAGS_UPPER_TSS, GDT_TYPE_TSS);
-
     kInitializeTSS(pstTSS);
+
+#ifdef DESCRIPTOR_DEBUG
+    kprintf("\nGDT=0x%q, TSSR=0x%q, TSS=0x%q sizeof(TSS)=0x%q\n",pstGDTTableEntry ,&(pstGDTTableEntry[3]), pstTSS, sizeof(TSSEGMENT));
+    tempP=(DWORD*)&(pstGDTTableEntry[3]);
+    for(i=0; i<sizeof(GDTENTRY16)/8; i++){
+        kprintf("0x%q : 0x%x\t0x%q : 0x%x\n", tempP, *tempP, tempP+1, *(tempP+1));
+        tempP+=2;
+    }
+#endif
 }
 void kInitializeTSS(TSSEGMENT* pstTSS){
+    int i;
+#ifdef DESCRIPTOR_DEBUG
+    DWORD* tempP=(DWORD*)pstTSS;
+#endif
     kMemSet(pstTSS, 0, sizeof(TSSEGMENT));
-    pstTSS->qwIST[0]=IST_STARTADDRESS+IST_SIZE;
+    pstTSS->qwIST[i]=IST_STARTADDRESS+IST_SIZE;
     pstTSS->wIOMapBaseAddress=0xFFFF;
+#ifdef DESCRIPTOR_DEBUG
+    kprintf("\n");
+    for(i=0; i<sizeof(TSSEGMENT)/8; i++){
+        kprintf("0x%q : 0x%x,\t0x%q : 0x%x\n", tempP, *tempP, tempP+1, *(tempP+1));
+        tempP+=2;
+    }
+#endif
 }
 
 void kInitializeIDTTables(){
     IDTR* pstIDTR;
     IDTENTRY* pstEntry;
     int i;
+#ifdef DESCRIPTOR_DEBUG
+    DWORD* tempP;
+#endif
 
     pstIDTR=(IDTR*) IDTR_STARTADDRESS;
-    pstEntry=(IDTENTRY*) IDTR_STARTADDRESS+sizeof(IDTR);
+    pstEntry=(IDTENTRY*) (IDTR_STARTADDRESS+sizeof(IDTR));
     
+    kMemSet(pstIDTR, 0, sizeof(IDTR));
     pstIDTR->wLimit=IDT_MAXTABLESIZE-1;
     pstIDTR->qwBaseAddress=(QWORD)pstEntry;
-
-    for(i=0; i<IDT_MAXENTRYCOUNT; i++){
+#ifdef DESCRIPTOR_DEBUG
+    kprintf("IDTR=0x%q, IDT=0x%q\n",pstIDTR ,pstEntry);
+#endif
+    /*for(i=0; i<IDT_MAXENTRYCOUNT; i++){
         kSetIDTEntry(&(pstEntry[i]), dummyHandler, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
-    }
+    }*/
     kSetIDTEntry(&(pstEntry[0]), kISRDivideZero, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
     kSetIDTEntry(&(pstEntry[1]), kISRDebug, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
     kSetIDTEntry(&(pstEntry[2]), kISRNMI, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
@@ -108,6 +137,14 @@ void kInitializeIDTTables(){
     for(i=48; i<IDT_MAXENTRYCOUNT; i++){
         kSetIDTEntry(&(pstEntry[i]), kISRETCInterrupt, GDT_KERNELCODESEGMENT, IDT_FLAGS_IST1, IDT_FLAGS_KERNEL, IDT_TYPE_INTERRUPT);
     }
+#ifdef DESCRIPTOR_DEBUG
+    tempP=(DWORD*) &(pstEntry[32]);
+    kprintf("\n");
+    for(i=0; i<sizeof(IDTENTRY)/4; i++){
+        kprintf("0x%q, 0x%x\n", tempP, *tempP);
+        tempP++;
+    }
+#endif
 }
 
 void kSetIDTEntry(IDTENTRY* pstEntry, void* pvHandler, WORD wSegmentSelector, BYTE bIST, BYTE bFlags, BYTE bGateType){
@@ -115,8 +152,8 @@ void kSetIDTEntry(IDTENTRY* pstEntry, void* pvHandler, WORD wSegmentSelector, BY
     pstEntry->wSegmentSelctor=wSegmentSelector;
     pstEntry->bIST=bIST&0b111;
     pstEntry->bFlagsAndGateType=bFlags|bGateType;
-    pstEntry->wMiddleHandlerAddress=((QWORD)pvHandler>>16)&0xFFFF;
-    pstEntry->dwUpperHandlerAddress=((QWORD)pvHandler>>32);
+    pstEntry->wMiddleHandlerAddress=(((QWORD)pvHandler)>>16)&0xFFFF;
+    pstEntry->dwUpperHandlerAddress=(((QWORD)pvHandler)>>32);
     pstEntry->dwReserved=0;
 }
 

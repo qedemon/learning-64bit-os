@@ -7,6 +7,7 @@
 #include "PIC.h"
 #include "PIT.h"
 #include "string.h"
+#include "Task.h"
 
 void main(){
     WORD wCursorX, wCursorY;
@@ -19,6 +20,7 @@ void main(){
     kprintf("%s", "GDT Initialize And Switch for IA-32e Mode...[    ]");
     kInitializeGDTTableAndTSS();    
     kLoadGDTR((QWORD) GDTR_STARTADDRESS);
+    kLoadTSSR(GDT_KERNELTSSEGMENT);
     kTerminalGetCursorPos(&wCursorX, &wCursorY);
     kTerminalSetCursorPos(45, wCursorY++);
     kprintf("Pass\n");
@@ -28,20 +30,22 @@ void main(){
     kLoadIDTR((QWORD) IDTR_STARTADDRESS);
     kTerminalSetCursorPos(45, wCursorY++);
     kprintf("Pass\n");
-
+    
     kprintf("%s", "Total RAM size check........................[    ]");
     kCheckTotalRamSize();
     kTerminalSetCursorPos(45, wCursorY++);
     kprintf("Pass], Size = %d MB\n", kGetTotalRamSize());
-
-    kInitializePIT(1, FALSE);
-
+   
     kprintf("%s", "Start Interrupt.............................[    ]");
     kInitializePIC();
     kMaskPICInterrupt(0);
     kEnableInterrupt();
     kTerminalSetCursorPos(45, wCursorY++);
     kprintf("Pass\n");
+    kprintf("TCB Pool And Scheduler Initialize.................[Pass]\n");
+    wCursorY++;
+    kInitializeScheduler();
+    kInitializePIT(MSTOCOUNT(1), TRUE);
     
     kprintf("%s", "Activate Keyboard...........................[Pass]");
     kTerminalSetCursorPos(45, wCursorY++);
@@ -49,16 +53,15 @@ void main(){
         kprintf("Pass\n");
     }
     else{
-        kprintf("Pass\n");
+        kprintf("Fail\n");
         while(1);
     }
 
-    if(!kUpdateKeyboardLeds()){
+    /*if(!kUpdateKeyboardLeds()){
         while(1);
-    }
-
+    }*/
+    
     kTerminalSetCursorPos(0, wCursorY);
     kprintf("MINT64 OS Start\n");
-    
     kStartTerminal();
 }

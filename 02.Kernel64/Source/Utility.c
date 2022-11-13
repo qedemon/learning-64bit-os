@@ -31,7 +31,7 @@ int kMemCmp(const void* pSrcA, const void* pSrcB, int iSize){
 }
 
 void kPrintString(int iX, int iY, const char* pcString){
-    kCharStruct* pstString=(kCharStruct*) 0xB8000;
+    CHARACTER* pstString=(CHARACTER*) 0xB8000;
     int i;
 
     pstString+=(iY*80)+iX;
