@@ -44,8 +44,10 @@ void kInitializeGDTTableAndTSS(){
     kInitializeTSS(pstTSS);
 }
 void kInitializeTSS(TSSEGMENT* pstTSS){
+    int i;
     kMemSet(pstTSS, 0, sizeof(TSSEGMENT));
-    pstTSS->qwIST[0]=IST_STARTADDRESS+IST_SIZE;
+    for(i=0; i<7; i++)
+        pstTSS->qwIST[i]=IST_STARTADDRESS+IST_SIZE;
     pstTSS->wIOMapBaseAddress=0xFFFF;
 }
 
