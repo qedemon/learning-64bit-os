@@ -168,13 +168,13 @@ int kDecimalToString(long lValue, char* pcDest){
     return i;
 }
 
-int kHexToString(long lValue, char* pcDest){
+int kHexToString(unsigned long lValue, char* pcDest){
     int i=0;
-    if(lValue<0){
+    /*if(lValue<0){
         pcDest[0]='-';
         lValue=-lValue;
         i=1;
-    }
+    }*/
     if(lValue==0){
         pcDest[i]='0';
         i++;

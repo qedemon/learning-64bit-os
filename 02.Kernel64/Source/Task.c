@@ -126,7 +126,7 @@ void kSchedule(){
     kSetInterruptFlag(bPreviousFlag);
 }
 
-BOOL kScheduleInInterupt(QWORD qwStackBaseAddress){
+BOOL kScheduleInInterupt(QWORD qwStackStartAddress){
     TCB* pstRuningTask, *pstNextTask;
     char* pcContextAddress;
     char vcBuffer[20];
@@ -135,8 +135,10 @@ BOOL kScheduleInInterupt(QWORD qwStackBaseAddress){
     if(pstNextTask==NULL){
         return FALSE;
     }
-    pcContextAddress=(char*)(qwStackBaseAddress-sizeof(CONTEXT));
+    pcContextAddress=(char*)(qwStackStartAddress-sizeof(CONTEXT));
+#ifdef TASK_DEBUG
     kprintf("0x%q, 0x%q\n", &(((CONTEXT*)pcContextAddress)->vqRegister[TASK_RBPOFFSET]), qwStackBaseAddress);
+#endif
     pstRuningTask=gs_stScheduler.pstRunningTask;
     kMemCpy(&(pstRuningTask->stContext), pcContextAddress, sizeof(CONTEXT));
     kAddLinkToTail(&(gs_stScheduler.stReadyList), pstRuningTask);

@@ -213,7 +213,8 @@ kISRETCException:
 kISRTimer:
     KSAVECONTEXT
     mov rdi, 32
-    mov rsi, 48
+    mov rsi, rbp
+    add rsi, 56
     call kTimerInterruptHandler
     KLOADCONTEXT
     iretq

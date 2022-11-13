@@ -30,11 +30,11 @@ void main(){
     kLoadIDTR((QWORD) IDTR_STARTADDRESS);
     kTerminalSetCursorPos(45, wCursorY++);
     kprintf("Pass\n");
-
-    /*kprintf("%s", "Total RAM size check........................[    ]");
+    
+    kprintf("%s", "Total RAM size check........................[    ]");
     kCheckTotalRamSize();
     kTerminalSetCursorPos(45, wCursorY++);
-    kprintf("Pass], Size = %d MB\n", kGetTotalRamSize());*/
+    kprintf("Pass], Size = %d MB\n", kGetTotalRamSize());
    
     kprintf("%s", "Start Interrupt.............................[    ]");
     kInitializePIC();
@@ -42,11 +42,10 @@ void main(){
     kEnableInterrupt();
     kTerminalSetCursorPos(45, wCursorY++);
     kprintf("Pass\n");
-
-    //kprintf("TCB Pool And Scheduler Initialize.................[Pass]\n");
-    //wCursorY++;
-    //kInitializeScheduler();
-    //kInitializePIT(MSTOCOUNT(1), FALSE);
+    kprintf("TCB Pool And Scheduler Initialize.................[Pass]\n");
+    wCursorY++;
+    kInitializeScheduler();
+    kInitializePIT(MSTOCOUNT(1), FALSE);
     
     kprintf("%s", "Activate Keyboard...........................[Pass]");
     kTerminalSetCursorPos(45, wCursorY++);
