@@ -14,7 +14,7 @@ void kSetGDTEntry8(GDTENTRY8* pstEntry, DWORD dwBaseAddress, DWORD dwLimit, BYTE
 void kSetGDTEntry16(GDTENTRY16* pstEntry, QWORD qwBaseAddress, DWORD dwLimit, BYTE bLowerFlags, BYTE bUpperFlags, BYTE bType){
     pstEntry->wLowerLimit=dwLimit&0xFFFF;
     pstEntry->wLowerBaseAddress=qwBaseAddress&0xFFFF;
-    pstEntry->bMiddleBaseAddress0=(dwLimit>>16)&0xFF;
+    pstEntry->bMiddleBaseAddress0=(qwBaseAddress>>16)&0xFF;
     pstEntry->bLowerFlagsAndType=bType|bLowerFlags;
     pstEntry->bUpperFlagsAndUpperLimit=((dwLimit>>16)&0xFF)|bUpperFlags;
     pstEntry->bMiddleBaseAddress1=(qwBaseAddress>>24)&0xFF;
