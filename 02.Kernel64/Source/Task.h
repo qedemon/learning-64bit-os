@@ -76,6 +76,7 @@ TCB* kAllocateTCB();
 void kFreeTCB(QWORD qwID);
 
 TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress);
+void kClearOtherTask();
 
 void kInitializeScheduler();
 void kSetRunningTask(TCB* pstTCB);

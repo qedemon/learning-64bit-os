@@ -18,7 +18,9 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"cpuspeed", "measure cpu speed", kTermianlCommandMeasureCPUSpeed},
     {"settimer", "settimer 100(ms) 1(periodic)", kTerminalCommandStartTimer},
     {"createtask", "Create Task", kTerminalCommandCreateTask},
+    {"stoptask", "Stop Task", kTerminalCommandStopOtherTasks},
     {"testLink", "testLink", kTerminalCommandTestLinkedList},
+    
 };
 
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** ppstTerminalCmd, int* piSpaceIndex){
@@ -63,6 +65,7 @@ void kTerminalCommandHelp(const char* pcArgument){
 }
 void kTerminalCommandClear(const char* pcArgument){
     kTerminalClear();
+    kTerminalSetAttribute(TERMINAL_DEFAULT_COLOR);
     kTerminalSetCursorOffset(0);
 }
 void kTerminalCommandShowTotalRamSize(const char* pcArgumnet){
@@ -160,9 +163,9 @@ void kTestTask1(){
     CHARACTER* pstScreen=(CHARACTER*) TERMINAL_VIDEOMEMORYADDRESS;
     TCB* pstRunningTask;
     pstRunningTask=kGetRunningTask();
-    iMargin=(pstRunningTask->stLink.qwID&0xFFFFFFFF)%10;
-    iX=0;
-    iY=0;
+    iMargin=((pstRunningTask->stLink.qwID&0xFFFFFFFF)-1)%10;
+    iX=iMargin-1;
+    iY=iMargin;
     kprintf("offset = %d \n", iMargin);
     while(1){
         switch(i){
@@ -174,19 +177,19 @@ void kTestTask1(){
                 break;
             case 1:
                 iY++;
-                if(iY>=(TERMINAL_HEIGHT-iMargin)){
+                if(iY>=(TERMINAL_HEIGHT-1-iMargin)){
                     i=2;
                 }
                 break;
             case 2:
                 iX--;
-                if(iX<iMargin){
+                if(iX<=iMargin){
                     i=3;
                 }
                 break;
             case 3:
                 iY--;
-                if(iY<iMargin){
+                if(iY<=iMargin){
                     i=0;
                 }
                 break;
@@ -194,12 +197,39 @@ void kTestTask1(){
         pstScreen[iY*TERMINAL_WIDTH+iX].bChar=bData;
         pstScreen[iY*TERMINAL_WIDTH+iX].bAttrib=bData&0x0F;
         bData++;
-        //kSchedule();
+        kSchedule();
     }
 }
 
 void kTerminalCommandCreateTask(const char* pcArgument){
-    kCreateTask(0, (QWORD) kTestTask1);
+    ARGUMENTLIST argumentList;
+    char vcBuffer[100];
+    int itaskNumber, itaskCount, i;
+    QWORD qwTaskAddress;
+    kInitializeArgumentList(&argumentList, pcArgument);
+    if(kGetNextArgumnet(&argumentList, vcBuffer)==0){
+        kprintf("createtask 1(taskNo) 3(taskCount)");
+        return;
+    }
+    itaskNumber=katoi(vcBuffer, 10);
+    switch(itaskNumber){
+        case 1:
+        default:
+            qwTaskAddress=(QWORD)kTestTask1;
+        break;
+    }
+    if(kGetNextArgumnet(&argumentList, vcBuffer)==0){
+        kprintf("createtask 1(taskNo) 3(taskCount)");
+        return;
+    }
+    itaskCount=katoi(vcBuffer, 10);
+    for(i=0; i<itaskCount; i++){
+        kCreateTask(0, qwTaskAddress);
+    }
+}
+
+void kTerminalCommandStopOtherTasks(const char* pcArgument){
+    kClearOtherTask();
 }
 
 void kTerminalCommandTestLinkedList(const char* pcArgument){

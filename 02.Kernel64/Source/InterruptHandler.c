@@ -13,6 +13,7 @@ void kCommonExceptionHandler(int iVectorNumber, QWORD qwErrorCode){
     kprintf("=======================================\n");
     kprintf("Common Exception Handler Execute!!\n");
     kprintf("%d\n", iVectorNumber);
+    kprintf("Error Code : 0x%q", qwErrorCode);
     kprintf("=======================================\n");
     while(1);
 }

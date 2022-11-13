@@ -45,7 +45,7 @@ void main(){
     kprintf("TCB Pool And Scheduler Initialize.................[Pass]\n");
     wCursorY++;
     kInitializeScheduler();
-    kInitializePIT(MSTOCOUNT(1), FALSE);
+    kInitializePIT(MSTOCOUNT(1), TRUE);
     
     kprintf("%s", "Activate Keyboard...........................[Pass]");
     kTerminalSetCursorPos(45, wCursorY++);

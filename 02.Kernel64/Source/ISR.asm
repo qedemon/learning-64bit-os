@@ -157,7 +157,7 @@ kISRStackSegmentFault:
 kISRGeneralProtection:
     KSAVECONTEXT
     mov rdi, 13
-    mov rsi, qword[rbp+8]
+    mov rsi, qword[rbp+16]
     call kCommonExceptionHandler
     KLOADCONTEXT
     add rsp, 8
@@ -214,7 +214,7 @@ kISRTimer:
     KSAVECONTEXT
     mov rdi, 32
     mov rsi, rbp
-    add rsi, 56
+    add rsi, 48
     call kTimerInterruptHandler
     KLOADCONTEXT
     iretq

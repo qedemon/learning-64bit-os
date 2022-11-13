@@ -89,7 +89,10 @@ TCB* kGetNextTaskToRun(){
 }
 
 void kAddTaskToReadyList(TCB* pstTCB){
+    BOOL bInterrupt;
+    bInterrupt=kSetInterruptFlag(FALSE);
     kAddLinkToTail(&(gs_stScheduler.stReadyList), pstTCB);
+    kSetInterruptFlag(bInterrupt);
 }
 
 TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress){
@@ -103,6 +106,21 @@ TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress){
     kAddTaskToReadyList(pstNewTask);
     kprintf("0x%q -> 0x%q\n", pstNewTask, qwEntryPointAddress);
     return pstNewTask;
+}
+
+void kClearOtherTask(){
+    TCB* pstRunningTask;
+    BOOL bInterrupt;
+    bInterrupt=kSetInterruptFlag(FALSE);
+    pstRunningTask=kGetRunningTask();
+    while(1){
+        TCB* otherTask=kGetNextTaskToRun();
+        if(otherTask==NULL){
+            break;
+        }
+        kFreeTCB(otherTask->stLink.qwID);
+    }
+    kSetInterruptFlag(bInterrupt);
 }
 
 void kSchedule(){
