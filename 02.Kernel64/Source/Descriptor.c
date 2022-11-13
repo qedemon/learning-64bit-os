@@ -55,7 +55,7 @@ void kInitializeIDTTables(){
     int i;
 
     pstIDTR=(IDTR*) IDTR_STARTADDRESS;
-    pstEntry=(IDTENTRY*) IDTR_STARTADDRESS+sizeof(IDTR);
+    pstEntry=(IDTENTRY*) (IDTR_STARTADDRESS+sizeof(IDTR));
     
     pstIDTR->wLimit=IDT_MAXTABLESIZE-1;
     pstIDTR->qwBaseAddress=(QWORD)pstEntry;

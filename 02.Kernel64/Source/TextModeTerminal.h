@@ -61,5 +61,4 @@ void kStartTerminal();
 
 void kTerminalExecuteCommand(const char* pcCommandBuffer);
 
-
 #endif
