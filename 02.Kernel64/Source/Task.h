@@ -55,6 +55,8 @@
 
 #define GETTCBOFFSET(ID) ((ID)&0xFFFFFFFF)
 
+#define ISTASKALLOCATED(ID) (((ID)>>32)!=0)
+
 #pragma pack(push, 1)
 typedef struct kContextStruct{
     QWORD vqRegister[TASK_REGISTERCOUNT];
@@ -101,7 +103,6 @@ TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress);
 BOOL kEndTask(QWORD qwTaskID);
 void kExitTask();
 void kClearOtherTask();
-void kIdleTask();
 
 void kInitializeScheduler();
 void kSetRunningTask(TCB* pstTCB);
@@ -114,6 +115,10 @@ BOOL kScheduleInInterupt(QWORD qwStackStartAddress);
 void kDecreaseProcessorTime();
 BOOL kIsProcessorTimeExpired();
 
+TCB* kGetTCBFromTCBPool(QWORD qwOffset);
+QWORD kGetProcessorLoad();
+
+void kIdleTask();
 void kHaltProcessorByLoad();
 
 #endif

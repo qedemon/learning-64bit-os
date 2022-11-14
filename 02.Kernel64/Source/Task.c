@@ -214,6 +214,7 @@ void kIdleTask(){
     TCB* pstTask;
     qwLastMeasureTickCount=kGetTickCount();
     qwLastSpendTickInIdleTask=gs_stScheduler.qwSpendProcessorTimeInIdleTask;
+    BYTE bInterrupt;
     while(1){
         qwCurrentMeasureTickCount=kGetTickCount();
         qwCurrentSpendTickInIdleTask=gs_stScheduler.qwSpendProcessorTimeInIdleTask;
@@ -233,7 +234,9 @@ void kIdleTask(){
                 if(pstTask==NULL){
                     break;
                 }
+                bInterrupt=kSetInterruptFlag(FALSE);
                 kprintf("IDLE: Task ID[0x%q] is completely ended.\n", pstTask->stLink.qwID);
+                kSetInterruptFlag(bInterrupt);
                 kFreeTCB(pstTask->stLink.qwID);
             }
         }
@@ -263,6 +266,11 @@ void kSchedule(){
     bPreviousFlag=kSetInterruptFlag(FALSE);
     pstNextTask=kGetNextTaskToRun();
     if(pstNextTask==NULL){
+        int i;
+        for(i; i<5; i++){
+            kprintf("%d, ", gs_stScheduler.stReadyList[i].iItemCount);
+        }
+        kprintf("\n");
         kSetInterruptFlag(bPreviousFlag);
         return;
     }
@@ -272,6 +280,7 @@ void kSchedule(){
     }
     if((pstRunningTask->qwFlags&TASK_FLAG_ENDTASK)){
         kAddLinkToTail(&(gs_stScheduler.stWaitList), pstRunningTask);
+        gs_stScheduler.pstRunningTask=pstNextTask;
         kSwitchContext(NULL, &(pstNextTask->stContext));
     }
     else{
@@ -287,7 +296,7 @@ void kSchedule(){
 BOOL kScheduleInInterupt(QWORD qwStackStartAddress){
     TCB* pstRunningTask, *pstNextTask;
     char* pcContextAddress;
-    char vcBuffer[20];
+    char vcBuffer[100];
 
     pstNextTask=kGetNextTaskToRun();
     if(pstNextTask==NULL){
@@ -308,10 +317,8 @@ BOOL kScheduleInInterupt(QWORD qwStackStartAddress){
         kMemCpy(&(pstRunningTask->stContext), pcContextAddress, sizeof(CONTEXT));
         kAddLinkToTail(&(gs_stScheduler.stReadyList[GETPRIORITY(pstRunningTask->qwFlags)]), pstRunningTask);
     }
-
     gs_stScheduler.pstRunningTask=pstNextTask;
     kMemCpy(pcContextAddress, &(pstNextTask->stContext), sizeof(CONTEXT));
-    
     gs_stScheduler.iProcessorTime=TASK_PROCESSTIME;
     return TRUE;
 }
@@ -323,6 +330,10 @@ void kDecreaseProcessorTime(){
 
 BOOL kIsProcessorTimeExpired(){
     return (gs_stScheduler.iProcessorTime<=0);
+}
+
+QWORD kGetProcessorLoad(){
+    return gs_stScheduler.qwProcessorLoad;
 }
 
 void kHaltProcessorByLoad(){

@@ -19,8 +19,10 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"settimer", "settimer 100(ms) 1(periodic)", kTerminalCommandStartTimer},
     {"createtask", "Create Task", kTerminalCommandCreateTask},
     {"stoptask", "Stop Task", kTerminalCommandStopOtherTasks},
+    {"showtask", "Show task list", kTerminalCommandShowTaskList},
+    {"killtask", "End Task ex) killtask 2(ID)", kTerminalCommandKillTask},
     {"testLink", "testLink", kTerminalCommandTestLinkedList},
-    
+    {"cpuload", "Get CPU Processing Load", kTerminalCommandGetProcessorLoad},
 };
 
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** ppstTerminalCmd, int* piSpaceIndex){
@@ -169,7 +171,7 @@ void kTestTask1(){
     iX=iMargin-1;
     iY=iMargin;
     //kprintf("offset = %d \n", iMargin);
-    for(j=0; j<400; j++){
+    for(j=0; j<2000; j++){
         switch(i){
             case 0:
                 iX++;
@@ -213,7 +215,7 @@ void kTestTask2(){
     pstRunningTask=kGetRunningTask();
     iOffset=(pstRunningTask->stLink.qwID&0xFFFFFFFF)-1;
     iOffset=TERMINAL_WIDTH*TERMINAL_HEIGHT-(iOffset%(TERMINAL_WIDTH*TERMINAL_HEIGHT))-1;
-    for(j=0; j<400; j++){
+    for(j=0; j<2000; j++){
         pstScreen[iOffset].bChar=vcData[i%4];
         pstScreen[iOffset].bAttrib=iOffset%15+1;
         i++;
@@ -256,6 +258,31 @@ void kTerminalCommandStopOtherTasks(const char* pcArgument){
     kClearOtherTask();
 }
 
+void kTerminalCommandShowTaskList(const char* pcArgument){
+    int i;
+    TCB* pstTCB;
+    int iCount=0;
+    for(i=0; i<TASK_MAXCOUNT; i++){
+        pstTCB=kGetTCBFromTCBPool(i);
+        if(ISTASKALLOCATED(pstTCB->stLink.qwID)){
+            if((iCount!=0)&&(iCount%10==0)){
+                kprintf("Press any key to continue....('q' is exit) : ");
+                if(kGetChar()=='q'){
+                    kprintf("\n");
+                    break;
+                }
+                kprintf("\n");
+            }
+            kprintf("[%d] Task ID[0x%q], Priority[%d], Flags[0x%q]\n", 1+iCount, pstTCB->stLink.qwID, GETPRIORITY(pstTCB->qwFlags), pstTCB->qwFlags);
+            iCount++;
+        }
+    }
+}
+
+void kTerminalCommandKillTask(const char* pcArgument){
+
+}
+
 void kTerminalCommandTestLinkedList(const char* pcArgument){
     LIST stLinkedList={0,};
     LISTLINK links[5]={0,};
@@ -281,4 +308,8 @@ void kTerminalCommandTestLinkedList(const char* pcArgument){
             break;
         kprintf("List ID : %d\n", pstLink->qwID);
     }
+}
+
+void kTerminalCommandGetProcessorLoad(const char* pcArgument){
+    kprintf("CPU Load : %d%%\n", kGetProcessorLoad());
 }

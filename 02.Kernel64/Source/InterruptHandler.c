@@ -34,6 +34,8 @@ void kTimerInterruptHandler(int iVectorNumber, QWORD qwStackStartAddress){
     static int g_iTimerInterruptCount=0;
     char vcBuffer[100];
     g_iTimerInterruptCount++;
+    ksprintf(vcBuffer, "[INT:%d,%d]", iVectorNumber, g_iTimerInterruptCount%10);
+    kTerminalPrintString(70, 0, vcBuffer);
     kSendEOIToPIC(iVectorNumber-32);
     kAddTickCount(1);
     kDecreaseProcessorTime();
