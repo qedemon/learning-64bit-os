@@ -100,6 +100,7 @@ TCB* kAllocateTCB();
 void kFreeTCB(QWORD qwID);
 
 TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress);
+BOOL kChangePriority(QWORD qwTaskID, BYTE bPriority);
 BOOL kEndTask(QWORD qwTaskID);
 void kExitTask();
 void kClearOtherTask();

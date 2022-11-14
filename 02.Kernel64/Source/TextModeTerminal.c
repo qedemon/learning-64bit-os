@@ -5,6 +5,7 @@
 #include "PIT.h"
 #include "string.h"
 #include "Utility.h"
+#include "Task.h"
 #include "TerminalCommand.h"
 
 static TERMINALMANAGER gs_stTerminalManager={0,};
@@ -186,6 +187,8 @@ char kGetChar(){
     while(1){
         if(kGetKeyFromKeyQueue(&stKeyData))
             break;
+        else
+            kSchedule();
     }
     return stKeyData.bASCIICode;
 }
@@ -196,6 +199,9 @@ void kStartTerminal(){
         KEYDATA stKeyData;
         if(kGetKeyFromKeyQueue(&stKeyData)){    
             kDataIntoTerminal(&stKeyData);
+        }
+        else{
+            kSchedule();
         }
     }
 }
