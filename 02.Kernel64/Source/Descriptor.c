@@ -21,7 +21,6 @@ void kSetGDTEntry16(GDTENTRY16* pstEntry, QWORD qwBaseAddress, DWORD dwLimit, BY
     pstEntry->bMiddleBaseAddress1=(qwBaseAddress>>24)&0xFF;
     pstEntry->dwUpperBaseAddress=(qwBaseAddress>>32);
     pstEntry->dwReserved=0;
-    
 }
 
 void kInitializeGDTTableAndTSS(){
