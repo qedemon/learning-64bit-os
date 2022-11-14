@@ -158,7 +158,7 @@ static TCB gs_stTaskControlBlock[2]={0,};
 static QWORD gs_vstStack[1024]={0,};
 
 void kTestTask1(){
-    BYTE bData;
+    BYTE bData='A';
     int i=0, iX=0, iY=0, iMargin;
     CHARACTER* pstScreen=(CHARACTER*) TERMINAL_VIDEOMEMORYADDRESS;
     TCB* pstRunningTask;
@@ -166,7 +166,7 @@ void kTestTask1(){
     iMargin=((pstRunningTask->stLink.qwID&0xFFFFFFFF)-1)%10;
     iX=iMargin-1;
     iY=iMargin;
-    //kprintf("offset = %d \n", iMargin);
+    kprintf("offset = %d \n", iMargin);
     while(1){
         switch(i){
             case 0:
@@ -201,22 +201,6 @@ void kTestTask1(){
     }
 }
 
-void kTestTask2(){
-    int i, iOffset;
-    TCB* pstRunningTask;
-    char vcData[4]={'/', '-', '\\', '|'};
-    CHARACTER* pstScreen=(CHARACTER*) TERMINAL_VIDEOMEMORYADDRESS;
-    pstRunningTask=kGetRunningTask();
-    iOffset=(pstRunningTask->stLink.qwID&0xFFFFFFFF)-1;
-    iOffset=TERMINAL_WIDTH*TERMINAL_HEIGHT-(iOffset%(TERMINAL_WIDTH*TERMINAL_HEIGHT))-1;
-    while(1){
-        pstScreen[iOffset].bChar=vcData[i%4];
-        pstScreen[iOffset].bAttrib=iOffset%15+1;
-        i++;
-        kSchedule();
-    }
-}
-
 void kTerminalCommandCreateTask(const char* pcArgument){
     ARGUMENTLIST argumentList;
     char vcBuffer[100];
@@ -230,11 +214,8 @@ void kTerminalCommandCreateTask(const char* pcArgument){
     itaskNumber=katoi(vcBuffer, 10);
     switch(itaskNumber){
         case 1:
-            qwTaskAddress=(QWORD)kTestTask1;
-            break;
-        case 2:
         default:
-            qwTaskAddress=(QWORD)kTestTask2;
+            qwTaskAddress=(QWORD)kTestTask1;
         break;
     }
     if(kGetNextArgumnet(&argumentList, vcBuffer)==0){

@@ -69,12 +69,8 @@ void kFreeTCB(QWORD qwID){
 static SCHEDULER gs_stScheduler;
 
 void kInitializeScheduler(){
-    int i;
     kInitializeTCBPool();
-    for(i=0; i<TASK_MAXREADYLISTCOUNTl i++){
-        kInitializeList(&(gs_stScheduler.stReadyList[i]));
-        viExecuteCount[i]=0;
-    }
+    kInitializeList(&(gs_stScheduler.stReadyList));
     gs_stScheduler.pstRunningTask=kAllocateTCB();
 }
 
@@ -108,9 +104,7 @@ TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress){
     pvStackAddress=(void*)(TASK_STACKPOOLADDRESS+(pstNewTask->stLink.qwID&0xFFFFFFFF)*(TASK_STACKSIZE));
     kInitializeTask(pstNewTask, qwFlag, qwEntryPointAddress, pvStackAddress, TASK_STACKSIZE);
     kAddTaskToReadyList(pstNewTask);
-#ifdef TASK_DEBUG
     kprintf("0x%q -> 0x%q\n", pstNewTask, qwEntryPointAddress);
-#endif
     return pstNewTask;
 }
 

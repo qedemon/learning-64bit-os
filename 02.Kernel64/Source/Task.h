@@ -39,16 +39,6 @@
 
 #define TASK_PROCESSTIME 5
 
-#define TASK_MAXREADYLISTCOUNT 5
-#define TASK_FLAG_HIGHEST 0
-#define TASK_FLAG_HIGH 1
-#define TASK_FLAG_MEDIUM 2
-#define TASK_FLAG_LOW 3
-#define TASK_FLAG_LOWEST 4
-
-#define GETPRIORITY(x) ((x)&0xFF)
-#define SETPRIORITY(x, priority) ((x)=((x)&0xFFFFFFFFFFFFFF00)|priority)
-
 #pragma pack(push, 1)
 typedef struct kContextStruct{
     QWORD vqRegister[TASK_REGISTERCOUNT];
@@ -73,9 +63,7 @@ typedef struct kTCBPoolManager{
 typedef struct kSchedulerStruct{
     TCB* pstRunningTask;
     int iProcessorTime;
-    LIST stReadyList[TASK_MAXREADYLISTCOUNT];
-
-    int viExecuteCount[TASK_MAXREADYLISTCOUNT];
+    LIST stReadyList;
 }SCHEDULER;
 
 #pragma pack(pop)
