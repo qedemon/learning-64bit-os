@@ -57,6 +57,8 @@ TCB* kAllocateTCB(){
     }
     gs_stTCBPoolManager.iUseCount++;
     gs_stTCBPoolManager.iAllocatedCount++;
+    if(gs_stTCBPoolManager.iAllocatedCount==0)
+        gs_stTCBPoolManager.iAllocatedCount=1;
     
     return pstEmptyTCB;
 }
@@ -136,22 +138,27 @@ TCB* kRemoveTaskFromReadyList(QWORD qwTaskID){
     }
     pstTargetTask=&(gs_stTCBPoolManager.pstStartAddress[GETTCBOFFSET(qwTaskID)]);
     if(pstTargetTask->stLink.qwID!=qwTaskID){
+        kprintf("pstTargetTask->stLink.qwID!=qwTaskID\n");
+        kprintf("0x%q != 0x%q\n", pstTargetTask->stLink.qwID, qwTaskID);
+        
         return NULL;
     }
     bPriority=GETPRIORITY(pstTargetTask->qwFlags);
     pstTargetTask=kRemoveLink(&(gs_stScheduler.stReadyList[bPriority]), qwTaskID);
+    if(pstTargetTask==NULL){
+        kprintf("pstTargetTask==NULL\n");
+    }
     return pstTargetTask;
 }
 
 BOOL kChangePriority(QWORD qwTaskID, BYTE bPriority){
     TCB* pstTargetTask;
-    TCB* pstRunningTask;
     BYTE bInterrupt;
     if(bPriority>=TASK_MAXREADYLISTCOUNT)
         return FALSE;
     bInterrupt=kSetInterruptFlag(FALSE);
-    pstRunningTask=kGetRunningTask();
-    if(pstRunningTask->stLink.qwID==qwTaskID){
+    pstTargetTask=kGetRunningTask();
+    if(pstTargetTask->stLink.qwID==qwTaskID){
         SETPRIORITY(pstTargetTask->qwFlags, bPriority);
     }
     else{
@@ -160,6 +167,7 @@ BOOL kChangePriority(QWORD qwTaskID, BYTE bPriority){
         kAddTaskToReadyList(pstTargetTask);
     }
     bInterrupt=kSetInterruptFlag(bInterrupt);
+    return TRUE;
 }
 
 TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress){
