@@ -71,9 +71,9 @@ static SCHEDULER gs_stScheduler;
 void kInitializeScheduler(){
     int i;
     kInitializeTCBPool();
-    for(i=0; i<TASK_MAXREADYLISTCOUNTl i++){
+    for(i=0; i<TASK_MAXREADYLISTCOUNT; i++){
         kInitializeList(&(gs_stScheduler.stReadyList[i]));
-        viExecuteCount[i]=0;
+        gs_stScheduler.viExecuteCount[i]=0;
     }
     gs_stScheduler.pstRunningTask=kAllocateTCB();
 }
