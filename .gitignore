@@ -8,3 +8,4 @@ ImageMaker.py
 .vscode/tasks.json
 .vscode/c_cpp_properties.json
 .vscode/settings.json
+chmod.sh
