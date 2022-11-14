@@ -160,14 +160,16 @@ static QWORD gs_vstStack[1024]={0,};
 void kTestTask1(){
     BYTE bData;
     int i=0, iX=0, iY=0, iMargin;
+    int j;
     CHARACTER* pstScreen=(CHARACTER*) TERMINAL_VIDEOMEMORYADDRESS;
     TCB* pstRunningTask;
     pstRunningTask=kGetRunningTask();
     iMargin=((pstRunningTask->stLink.qwID&0xFFFFFFFF)-1)%10;
+    bData=pstRunningTask->stLink.qwID;
     iX=iMargin-1;
     iY=iMargin;
     //kprintf("offset = %d \n", iMargin);
-    while(1){
+    for(j=0; j<400; j++){
         switch(i){
             case 0:
                 iX++;
@@ -197,24 +199,27 @@ void kTestTask1(){
         pstScreen[iY*TERMINAL_WIDTH+iX].bChar=bData;
         pstScreen[iY*TERMINAL_WIDTH+iX].bAttrib=bData&0x0F;
         bData++;
-        kSchedule();
+        //kSchedule();
     }
+    kExitTask();
 }
 
 void kTestTask2(){
     int i, iOffset;
+    int j;
     TCB* pstRunningTask;
     char vcData[4]={'/', '-', '\\', '|'};
     CHARACTER* pstScreen=(CHARACTER*) TERMINAL_VIDEOMEMORYADDRESS;
     pstRunningTask=kGetRunningTask();
     iOffset=(pstRunningTask->stLink.qwID&0xFFFFFFFF)-1;
     iOffset=TERMINAL_WIDTH*TERMINAL_HEIGHT-(iOffset%(TERMINAL_WIDTH*TERMINAL_HEIGHT))-1;
-    while(1){
+    for(j=0; j<400; j++){
         pstScreen[iOffset].bChar=vcData[i%4];
         pstScreen[iOffset].bAttrib=iOffset%15+1;
         i++;
-        kSchedule();
+        //kSchedule();
     }
+    kExitTask();
 }
 
 void kTerminalCommandCreateTask(const char* pcArgument){
@@ -224,7 +229,7 @@ void kTerminalCommandCreateTask(const char* pcArgument){
     QWORD qwTaskAddress;
     kInitializeArgumentList(&argumentList, pcArgument);
     if(kGetNextArgumnet(&argumentList, vcBuffer)==0){
-        kprintf("createtask 1(taskNo) 3(taskCount)");
+        kprintf("createtask 1(taskNo) 3(taskCount)\n");
         return;
     }
     itaskNumber=katoi(vcBuffer, 10);
@@ -238,12 +243,12 @@ void kTerminalCommandCreateTask(const char* pcArgument){
         break;
     }
     if(kGetNextArgumnet(&argumentList, vcBuffer)==0){
-        kprintf("createtask 1(taskNo) 3(taskCount)");
+        kprintf("createtask 1(taskNo) 3(taskCount)\n");
         return;
     }
     itaskCount=katoi(vcBuffer, 10);
     for(i=0; i<itaskCount; i++){
-        kCreateTask(0, qwTaskAddress);
+        kCreateTask(TASK_FLAG_LOW, qwTaskAddress);
     }
 }
 

@@ -25,4 +25,7 @@ void kInitializePIT(WORD wCount, BOOL bPeriodic);
 WORD kReadPITCounter0();
 void kWaitUsingDirectPIT(WORD wCount);
 
+QWORD kGetTickCount();
+void kAddTickCount(QWORD qwValue);
+
 #endif

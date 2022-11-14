@@ -6,6 +6,7 @@ global kInPortByte, kOutPortByte, kLoadGDTR, kLoadTSSR, kLoadIDTR
 global kEnableInterrupt, kDisableInterrupt, kReadRFLAGS
 global kReadTSC
 global kGetRIPValue
+global kHlt
 
 kInPortByte:
     push rdx
@@ -47,4 +48,7 @@ kReadTSC:
     shl rdx, 32
     or rax, rdx
     pop rdx
+    ret
+kHlt:
+    hlt
     ret
