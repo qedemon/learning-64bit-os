@@ -19,8 +19,11 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"settimer", "settimer 100(ms) 1(periodic)", kTerminalCommandStartTimer},
     {"createtask", "Create Task", kTerminalCommandCreateTask},
     {"stoptask", "Stop Task", kTerminalCommandStopOtherTasks},
+    {"showtask", "Show task list", kTerminalCommandShowTaskList},
+    {"killtask", "End Task ex) killtask 2(ID)", kTerminalCommandKillTask},
     {"testLink", "testLink", kTerminalCommandTestLinkedList},
-    
+    {"cpuload", "Get CPU Processing Load", kTerminalCommandGetProcessorLoad},
+    {"chpri", "chpri 0x30002(ID) 3(priority)", kTerminalCommandChangePriority},
 };
 
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** ppstTerminalCmd, int* piSpaceIndex){
@@ -160,14 +163,16 @@ static QWORD gs_vstStack[1024]={0,};
 void kTestTask1(){
     BYTE bData;
     int i=0, iX=0, iY=0, iMargin;
+    int j;
     CHARACTER* pstScreen=(CHARACTER*) TERMINAL_VIDEOMEMORYADDRESS;
     TCB* pstRunningTask;
     pstRunningTask=kGetRunningTask();
     iMargin=((pstRunningTask->stLink.qwID&0xFFFFFFFF)-1)%10;
+    bData=pstRunningTask->stLink.qwID;
     iX=iMargin-1;
     iY=iMargin;
     //kprintf("offset = %d \n", iMargin);
-    while(1){
+    for(j=0; j<20000; j++){
         switch(i){
             case 0:
                 iX++;
@@ -197,24 +202,27 @@ void kTestTask1(){
         pstScreen[iY*TERMINAL_WIDTH+iX].bChar=bData;
         pstScreen[iY*TERMINAL_WIDTH+iX].bAttrib=bData&0x0F;
         bData++;
-        kSchedule();
+        //kSchedule();
     }
+    kExitTask();
 }
 
 void kTestTask2(){
     int i, iOffset;
+    int j;
     TCB* pstRunningTask;
     char vcData[4]={'/', '-', '\\', '|'};
     CHARACTER* pstScreen=(CHARACTER*) TERMINAL_VIDEOMEMORYADDRESS;
     pstRunningTask=kGetRunningTask();
-    iOffset=(pstRunningTask->stLink.qwID&0xFFFFFFFF)-1;
+    iOffset=(pstRunningTask->stLink.qwID&0xFFFFFFFF)-2;
     iOffset=TERMINAL_WIDTH*TERMINAL_HEIGHT-(iOffset%(TERMINAL_WIDTH*TERMINAL_HEIGHT))-1;
-    while(1){
+    for(j=0; j<20000; j++){
         pstScreen[iOffset].bChar=vcData[i%4];
         pstScreen[iOffset].bAttrib=iOffset%15+1;
         i++;
-        kSchedule();
+        //kSchedule();
     }
+    kExitTask();
 }
 
 void kTerminalCommandCreateTask(const char* pcArgument){
@@ -224,7 +232,7 @@ void kTerminalCommandCreateTask(const char* pcArgument){
     QWORD qwTaskAddress;
     kInitializeArgumentList(&argumentList, pcArgument);
     if(kGetNextArgumnet(&argumentList, vcBuffer)==0){
-        kprintf("createtask 1(taskNo) 3(taskCount)");
+        kprintf("createtask 1(taskNo) 3(taskCount)\n");
         return;
     }
     itaskNumber=katoi(vcBuffer, 10);
@@ -238,17 +246,38 @@ void kTerminalCommandCreateTask(const char* pcArgument){
         break;
     }
     if(kGetNextArgumnet(&argumentList, vcBuffer)==0){
-        kprintf("createtask 1(taskNo) 3(taskCount)");
+        kprintf("createtask 1(taskNo) 3(taskCount)\n");
         return;
     }
     itaskCount=katoi(vcBuffer, 10);
     for(i=0; i<itaskCount; i++){
-        kCreateTask(0, qwTaskAddress);
+        kCreateTask(TASK_FLAG_LOW, qwTaskAddress);
     }
 }
 
 void kTerminalCommandStopOtherTasks(const char* pcArgument){
     kClearOtherTask();
+}
+
+void kTerminalCommandShowTaskList(const char* pcArgument){
+    int i;
+    TCB* pstTCB;
+    int iCount=0;
+    for(i=0; i<TASK_MAXCOUNT; i++){
+        pstTCB=kGetTCBFromTCBPool(i);
+        if(ISTASKALLOCATED(pstTCB->stLink.qwID)){
+            if((iCount!=0)&&(iCount%10==0)){
+                kprintf("Press any key to continue....('q' is exit) : ");
+                if(kGetChar()=='q'){
+                    kprintf("\n");
+                    break;
+                }
+                kprintf("\n");
+            }
+            kprintf("[%d] Task ID[0x%q], Priority[%d], Flags[0x%q]\n", 1+iCount, pstTCB->stLink.qwID, GETPRIORITY(pstTCB->qwFlags), pstTCB->qwFlags);
+            iCount++;
+        }
+    }
 }
 
 void kTerminalCommandTestLinkedList(const char* pcArgument){
@@ -275,5 +304,96 @@ void kTerminalCommandTestLinkedList(const char* pcArgument){
         if(pstLink==NULL)
             break;
         kprintf("List ID : %d\n", pstLink->qwID);
+    }
+}
+
+void kTerminalCommandGetProcessorLoad(const char* pcArgument){
+    kprintf("CPU Load : %d%%\n", kGetProcessorLoad());
+}
+
+void kTerminalCommandChangePriority(const char* pcArgument){
+    ARGUMENTLIST argumentList;
+    QWORD qwID;
+    BYTE bPriority, bPreviousPriority;
+    char vcBuffer[100];
+    TCB* pstTargetTask;
+    kInitializeArgumentList(&argumentList, pcArgument);
+    if(kGetNextArgumnet(&argumentList, vcBuffer)==0){
+        kprintf("chpri 0x30002(ID) 3(priority)\n");
+        return;
+    }
+    if(kMemCmp(vcBuffer, "0x", 2)==0){
+        qwID=katoi(vcBuffer+2, 16);
+    }
+    else{
+        qwID=katoi(vcBuffer, 10);
+    }
+    pstTargetTask=kGetTCBFromTCBPool(GETTCBOFFSET(qwID));
+    if((pstTargetTask==NULL)){
+        kprintf("Cannot find task[ID=0x%q]\n", qwID);
+        return;
+    }
+    if(kGetNextArgumnet(&argumentList, vcBuffer)==0){
+        kprintf("chpri 0x300029(ID) 3(priority)");
+        return;
+    }
+    if(kMemCmp(vcBuffer, "0x", 2)==0){
+        bPriority=katoi(vcBuffer+2, 16);
+    }
+    else{
+        bPriority=katoi(vcBuffer, 10);
+    }
+    bPreviousPriority=GETPRIORITY(pstTargetTask->qwFlags);
+    if(kChangePriority(pstTargetTask->stLink.qwID, bPriority)){
+        kprintf("Task[ID 0x%q] priority [%d->%d]\n", pstTargetTask->stLink.qwID, bPreviousPriority, bPriority);
+    }
+    else{
+        kprintf("Task[ID 0x%q] priority [%d->%d] failed.\n", pstTargetTask->stLink.qwID, bPreviousPriority, bPriority);
+    }
+}
+
+void kTerminalCommandKillTask(const char* pcArgument){
+    ARGUMENTLIST argumentList;
+    QWORD qwID;
+    char vcBuffer[100];
+    TCB* pstTargetTask;
+    kInitializeArgumentList(&argumentList, pcArgument);
+    if(kGetNextArgumnet(&argumentList, vcBuffer)==0){
+        kprintf("killtask 0x30002(ID)\n");
+        return;
+    }
+    if(kMemCmp(vcBuffer, "0x", 2)==0){
+        qwID=katoi(vcBuffer+2, 16);
+    }
+    else{
+        qwID=katoi(vcBuffer, 10);
+    }
+    if(qwID!=0xFFFFFFFF){
+        pstTargetTask=kGetTCBFromTCBPool(GETTCBOFFSET(qwID));
+        if((pstTargetTask==NULL)){
+            kprintf("Cannot find task[ID=0x%q]\n", qwID);
+            return;
+        }
+        if(kEndTask(pstTargetTask->stLink.qwID)){
+            kprintf("Task[ID 0x%q] stopped\n", pstTargetTask->stLink.qwID);
+        }
+        else{
+            kprintf("Task[ID 0x%q] stopped abnormaly.\n", pstTargetTask->stLink.qwID);
+        }
+    }
+    else{
+        int i;
+        for(i=0; i<TASK_MAXCOUNT; i++){
+            pstTargetTask=kGetTCBFromTCBPool(GETTCBOFFSET(qwID));
+            if(ISTASKALLOCATED(pstTargetTask->stLink.qwID)){
+                kprintf("Task[ID 0x%q] stoppoed ", pstTargetTask->stLink.qwID);
+                if(kEndTask(pstTargetTask->stLink.qwID)){
+                    kprintf("\n");
+                }
+                else{
+                    kprintf("abnormaly\n");
+                }
+            }
+        }
     }
 }

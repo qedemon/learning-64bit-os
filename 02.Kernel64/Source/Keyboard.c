@@ -2,6 +2,7 @@
 #include "Utility.h"
 #include "Keyboard.h"
 #include "Queue.h"
+#include "Synchronization.h"
 
 #define KEY_MAXQUEUECOUNT 100
 
@@ -18,10 +19,10 @@ BOOL kIsOutputBufferFull(){
 BOOL kActivateKeyBoard(){
     int i;
     int j;
-    BOOL bPreviousInterrupt;
+    BOOL bLockInfo;
     BOOL bResult;
 
-    bPreviousInterrupt=kSetInterruptFlag(FALSE);
+    bLockInfo=kLockForSystemData();
     kOutPortByte(0x64, 0xAE);
 
     for(i=0; i<0xFFFF; i++){
@@ -31,7 +32,7 @@ BOOL kActivateKeyBoard(){
     }
     kOutPortByte(0x60, 0xF4);
     bResult=kWaitForACKAndPutOtherScanCode();
-    kSetInterruptFlag(bPreviousInterrupt);
+    kUnlockForSystemData(bLockInfo);
     return bResult;
 }
 
@@ -285,19 +286,19 @@ BOOL kInitializeKeyBoard(){
 BOOL kUpdateKeyBoardManagerAndPutKeyDatatToQueue(BYTE bScanCode){
     BYTE bAsciiCode;
     KEYDATA stKeyData;
-    BYTE bPreviousInterrupt;
+    BYTE bLockInfo;
     BYTE bResult=FALSE;
     if(kUpdateKeyBoardManager(bScanCode, &bAsciiCode)){
-        if(kIsQueueFull(&gs_stKeyQueue)){
-            return FALSE;
-        }
         stKeyData.bScanCode=bScanCode;
         stKeyData.bASCIICode=bAsciiCode;
         stKeyData.bFlags=0;
-        bPreviousInterrupt=kSetInterruptFlag(FALSE);
+        bLockInfo=kLockForSystemData();
+        if(kIsQueueFull(&gs_stKeyQueue)){
+            kUnlockForSystemData(bLockInfo);
+            return FALSE;
+        }
         bResult = kPutDataToQueue(&gs_stKeyQueue, &stKeyData);
-        kSetInterruptFlag(bPreviousInterrupt);
-
+        kUnlockForSystemData(bLockInfo);
         return bResult;
     }
     return FALSE;
@@ -305,12 +306,12 @@ BOOL kUpdateKeyBoardManagerAndPutKeyDatatToQueue(BYTE bScanCode){
 
 BOOL kGetKeyFromKeyQueue(KEYDATA* pstOutput){
     BOOL bResult;
-    BOOL bPreviousInterrupt;
+    BOOL bLockInfo;
     if(kIsQueueEmpty(&gs_stKeyQueue))
         return FALSE;
-    bPreviousInterrupt = kSetInterruptFlag(FALSE);
+    bLockInfo = kLockForSystemData();
     bResult=kGetDataFromQueue(&gs_stKeyQueue, pstOutput);
-    kSetInterruptFlag(bPreviousInterrupt);
+    kUnlockForSystemData(bLockInfo);
     return bResult;
 }
 

@@ -6,6 +6,8 @@ global kInPortByte, kOutPortByte, kLoadGDTR, kLoadTSSR, kLoadIDTR
 global kEnableInterrupt, kDisableInterrupt, kReadRFLAGS
 global kReadTSC
 global kGetRIPValue
+global kHlt
+global kTestAndSet
 
 kInPortByte:
     push rdx
@@ -47,4 +49,17 @@ kReadTSC:
     shl rdx, 32
     or rax, rdx
     pop rdx
+    ret
+kHlt:
+    hlt
+    ret
+kTestAndSet:
+    mov rax, rsi
+    lock cmpxchg byte[rdi], dl
+    je .SUCCESS
+.NOTSAME:
+    mov rax, 0
+    ret
+.SUCCESS:
+    mov rax, 1
     ret

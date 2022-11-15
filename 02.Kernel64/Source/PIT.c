@@ -31,3 +31,13 @@ void kWaitUsingDirectPIT(WORD wCount){
             break;
     }
 }
+
+volatile QWORD g_qwTickCount=0;
+
+QWORD kGetTickCount(){
+    return g_qwTickCount;
+}
+
+void kAddTickCount(QWORD kValue){
+    g_qwTickCount+=kValue;
+}

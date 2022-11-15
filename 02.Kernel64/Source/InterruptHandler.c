@@ -1,6 +1,7 @@
 #include "InterruptHandler.h"
 #include "Utility.h"
 #include "PIC.h"
+#include "PIT.h"
 #include "Keyboard.h"
 #include "TextModeTerminal.h"
 #include "string.h"
@@ -27,11 +28,16 @@ void kCommonInterruptHandler(int iVectorNumber){
     kSendEOIToPIC(iVectorNumber-32);
 }
 
+
+
 void kTimerInterruptHandler(int iVectorNumber, QWORD qwStackStartAddress){
     static int g_iTimerInterruptCount=0;
     char vcBuffer[100];
     g_iTimerInterruptCount++;
+    ksprintf(vcBuffer, "[INT:%d,%d]", iVectorNumber, g_iTimerInterruptCount%10);
+    kTerminalPrintString(70, 0, vcBuffer);
     kSendEOIToPIC(iVectorNumber-32);
+    kAddTickCount(1);
     kDecreaseProcessorTime();
     if(kIsProcessorTimeExpired()){
         kScheduleInInterupt(qwStackStartAddress);

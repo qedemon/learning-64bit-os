@@ -11,8 +11,11 @@ void kLoadIDTR(QWORD qwIDTRAddress);
 void kEnableInterrupt();
 void kDisableInterrupt();
 QWORD kReadRFLAGS(void);
-
 QWORD kReadTSC();
+
+void kHlt();
+
+BOOL kTestAndSet(volatile BYTE* pbDest, BYTE bCompare, BYTE bSource);
 
 
 #endif

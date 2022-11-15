@@ -1,10 +1,13 @@
 #include "Type.h"
 #include "Task.h"
+#include "AssemblyUtility.h"
 #include "Utility.h"
 #include "Descriptor.h"
 #include "LinkedList.h"
 #include "TextModeTerminal.h"
 #include "string.h"
+#include "PIT.h"
+#include "Synchronization.h"
 
 void kInitializeTask(TCB* pstTCB, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize){
     kMemSet(pstTCB->stContext.vqRegister, 0, sizeof(pstTCB->stContext.vqRegister));
@@ -55,69 +58,225 @@ TCB* kAllocateTCB(){
     }
     gs_stTCBPoolManager.iUseCount++;
     gs_stTCBPoolManager.iAllocatedCount++;
+    if(gs_stTCBPoolManager.iAllocatedCount==0)
+        gs_stTCBPoolManager.iAllocatedCount=1;
     
     return pstEmptyTCB;
 }
 void kFreeTCB(QWORD qwID){
     int i;
-    i=qwID&0xFFFFFFFF;
+    i=GETTCBOFFSET(qwID);
     kMemSet(&(gs_stTCBPoolManager.pstStartAddress[i]), 0, sizeof(TCB));
     gs_stTCBPoolManager.pstStartAddress[i].stLink.qwID=i;
     gs_stTCBPoolManager.iUseCount--;
+}
+
+TCB* kGetTCBFromTCBPool(QWORD qwOffset){
+    if(qwOffset>=gs_stTCBPoolManager.iMaxCount)
+        return NULL;
+    return &(gs_stTCBPoolManager.pstStartAddress[qwOffset]);
 }
 
 static SCHEDULER gs_stScheduler;
 
 void kInitializeScheduler(){
     int i;
+    BYTE bLockInfo;
     kInitializeTCBPool();
-    for(i=0; i<TASK_MAXREADYLISTCOUNTl i++){
+    bLockInfo=kLockForSystemData();
+    for(i=0; i<TASK_MAXREADYLISTCOUNT; i++){
         kInitializeList(&(gs_stScheduler.stReadyList[i]));
-        viExecuteCount[i]=0;
+        gs_stScheduler.viExecuteCount[i]=0;
     }
     gs_stScheduler.pstRunningTask=kAllocateTCB();
+    SETPRIORITY(gs_stScheduler.pstRunningTask->qwFlags, TASK_FLAG_HIGHEST);
+
+    gs_stScheduler.qwProcessorLoad=0;
+    gs_stScheduler.qwSpendProcessorTimeInIdleTask=0;
+    kUnlockForSystemData(bLockInfo);
 }
 
 void kSetRuningTask(TCB* pstTCB){
+    BYTE bLockInfo;
+    bLockInfo=kLockForSystemData();
     gs_stScheduler.pstRunningTask=pstTCB;
+    kUnlockForSystemData(bLockInfo);
 }
 
 TCB* kGetRunningTask(){
-    return gs_stScheduler.pstRunningTask;
+    TCB* pstRunningTask;
+    BYTE bLockInfo=kLockForSystemData();
+    pstRunningTask=gs_stScheduler.pstRunningTask;
+    kUnlockForSystemData(bLockInfo);
+    return pstRunningTask;
+}
+
+int kGetReadyTaskCount(){
+    int iCount=0;
+    int i;
+    for(i=0; i<TASK_MAXREADYLISTCOUNT; i++)
+        iCount+=gs_stScheduler.stReadyList[i].iItemCount;
+    return iCount;
 }
 
 TCB* kGetNextTaskToRun(){
-    if(gs_stScheduler.stReadyList.iItemCount==0)
-        return NULL;
-    return (TCB*)kRemoveLinkFromHead(&(gs_stScheduler.stReadyList));
+    TCB* pstNextTask=NULL;
+    int i, j;
+    for(j=0; j<2; j++){
+        for(i=0; i<TASK_PROCESSTIME; i++){
+            if(gs_stScheduler.viExecuteCount[i]<kGetListCount(&gs_stScheduler.stReadyList[i])){
+                pstNextTask=kRemoveLinkFromHead(&gs_stScheduler.stReadyList[i]);
+                gs_stScheduler.viExecuteCount[i]++;
+                break;
+            }
+            gs_stScheduler.viExecuteCount[i]=0;
+        }
+        if(pstNextTask!=NULL)
+            break;
+    }
+    return pstNextTask;
 }
 
-void kAddTaskToReadyList(TCB* pstTCB){
-    BOOL bInterrupt;
-    bInterrupt=kSetInterruptFlag(FALSE);
-    kAddLinkToTail(&(gs_stScheduler.stReadyList), pstTCB);
-    kSetInterruptFlag(bInterrupt);
+BOOL kAddTaskToReadyList(TCB* pstTCB){
+    BYTE bLockInfo;
+    BYTE bPriority;
+    bPriority=GETPRIORITY(pstTCB->qwFlags);
+    if(bPriority>=TASK_MAXREADYLISTCOUNT)
+        return FALSE;
+    bLockInfo=kLockForSystemData();
+    kAddLinkToTail(&(gs_stScheduler.stReadyList[bPriority]), pstTCB);
+    kUnlockForSystemData(bLockInfo);
+    return TRUE;
+}
+
+TCB* kRemoveTaskFromReadyList(QWORD qwTaskID){
+    TCB* pstTargetTask;
+    BYTE bPriority;
+    if(GETTCBOFFSET(qwTaskID)>=TASK_MAXCOUNT){
+        return NULL;
+    }
+    pstTargetTask=&(gs_stTCBPoolManager.pstStartAddress[GETTCBOFFSET(qwTaskID)]);
+    if(pstTargetTask->stLink.qwID!=qwTaskID){
+        return NULL;
+    }
+    bPriority=GETPRIORITY(pstTargetTask->qwFlags);
+    pstTargetTask=kRemoveLink(&(gs_stScheduler.stReadyList[bPriority]), qwTaskID);
+    return pstTargetTask;
+}
+
+BOOL kChangePriority(QWORD qwTaskID, BYTE bPriority){
+    TCB* pstTargetTask;
+    BYTE bLockInfo;
+    if(bPriority>=TASK_MAXREADYLISTCOUNT)
+        return FALSE;
+    pstTargetTask=kGetRunningTask();
+    bLockInfo=kLockForSystemData();
+    if(pstTargetTask->stLink.qwID==qwTaskID){
+        SETPRIORITY(pstTargetTask->qwFlags, bPriority);
+    }
+    else{
+        pstTargetTask=kRemoveTaskFromReadyList(qwTaskID);
+        SETPRIORITY(pstTargetTask->qwFlags, bPriority);
+        kAddTaskToReadyList(pstTargetTask);
+    }
+    kUnlockForSystemData(bLockInfo);
+    return TRUE;
 }
 
 TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress){
     TCB* pstNewTask;
     void* pvStackAddress;
+    BYTE bLockInfo;
+    bLockInfo=kLockForSystemData();
     pstNewTask=kAllocateTCB();
-    if(pstNewTask==NULL)
+    if(pstNewTask==NULL){
+        kUnlockForSystemData(bLockInfo);
         return NULL;
-    pvStackAddress=(void*)(TASK_STACKPOOLADDRESS+(pstNewTask->stLink.qwID&0xFFFFFFFF)*(TASK_STACKSIZE));
+    }
+    kUnlockForSystemData(bLockInfo);
+    pvStackAddress=(void*)(TASK_STACKPOOLADDRESS+GETTCBOFFSET(pstNewTask->stLink.qwID)*(TASK_STACKSIZE));
     kInitializeTask(pstNewTask, qwFlag, qwEntryPointAddress, pvStackAddress, TASK_STACKSIZE);
+    bLockInfo=kLockForSystemData();
     kAddTaskToReadyList(pstNewTask);
+    kUnlockForSystemData(bLockInfo);
 #ifdef TASK_DEBUG
     kprintf("0x%q -> 0x%q\n", pstNewTask, qwEntryPointAddress);
 #endif
     return pstNewTask;
 }
 
+BOOL kEndTask(QWORD qwTaskID){
+    TCB* pstTarget;
+    BYTE bPriority;
+    pstTarget=kGetRunningTask();
+    if(pstTarget->stLink.qwID==qwTaskID){
+        pstTarget->qwFlags|=TASK_FLAG_ENDTASK;
+        SETPRIORITY(pstTarget->qwFlags, TASK_FLAG_WAIT);
+        kSchedule();
+        while(1);
+    }
+    else{
+        BYTE bLockInfo;
+        bLockInfo=kLockForSystemData();
+        pstTarget=kRemoveTaskFromReadyList(qwTaskID);
+        if(pstTarget==NULL){
+            kUnlockForSystemData(bLockInfo);
+            pstTarget=kGetTCBFromTCBPool(GETTCBOFFSET(qwTaskID));
+            if(pstTarget!=NULL){
+                pstTarget->qwFlags|=TASK_FLAG_ENDTASK;
+                SETPRIORITY(pstTarget->qwFlags, TASK_FLAG_WAIT);
+            }
+            return FALSE;
+        }
+        pstTarget->qwFlags|=TASK_FLAG_ENDTASK;
+        SETPRIORITY(pstTarget->qwFlags, TASK_FLAG_WAIT);
+        kAddLinkToTail(&gs_stScheduler.stWaitList, pstTarget);
+        kUnlockForSystemData(bLockInfo);
+    }
+    return TRUE;
+}
+
+void kExitTask(){
+    kEndTask(kGetRunningTask()->stLink.qwID);
+}
+
+void kIdleTask(){
+    QWORD qwLastMeasureTickCount, qwLastSpendTickInIdleTask;
+    QWORD qwCurrentMeasureTickCount, qwCurrentSpendTickInIdleTask;
+    TCB* pstTask;
+    qwLastMeasureTickCount=kGetTickCount();
+    qwLastSpendTickInIdleTask=gs_stScheduler.qwSpendProcessorTimeInIdleTask;
+    while(1){
+        qwCurrentMeasureTickCount=kGetTickCount();
+        qwCurrentSpendTickInIdleTask=gs_stScheduler.qwSpendProcessorTimeInIdleTask;
+        if(qwCurrentMeasureTickCount-qwLastMeasureTickCount==0){
+            gs_stScheduler.qwProcessorLoad=0;
+        }
+        else{
+            gs_stScheduler.qwProcessorLoad=100-(qwCurrentSpendTickInIdleTask-qwLastSpendTickInIdleTask)*100/(qwCurrentMeasureTickCount-qwLastMeasureTickCount);
+        }
+        qwLastMeasureTickCount=qwCurrentMeasureTickCount;
+        qwLastSpendTickInIdleTask=qwCurrentSpendTickInIdleTask;
+        kHaltProcessorByLoad();
+
+        if(kGetListCount(&(gs_stScheduler.stWaitList))>0){
+            while(1){
+                pstTask=kRemoveLinkFromHead(&(gs_stScheduler.stWaitList));
+                if(pstTask==NULL){
+                    break;
+                }
+                kprintf("IDLE: Task ID[0x%q] is completely ended.\n", pstTask->stLink.qwID);
+                kFreeTCB(pstTask->stLink.qwID);
+            }
+        }
+        kSchedule();
+    }
+}
+
 void kClearOtherTask(){
     TCB* pstRunningTask;
-    BOOL bInterrupt;
-    bInterrupt=kSetInterruptFlag(FALSE);
+    BYTE bLockInfo;
+    bLockInfo=kLockForSystemData();
     pstRunningTask=kGetRunningTask();
     while(1){
         TCB* otherTask=kGetNextTaskToRun();
@@ -126,50 +285,70 @@ void kClearOtherTask(){
         }
         kFreeTCB(otherTask->stLink.qwID);
     }
-    kSetInterruptFlag(bInterrupt);
+    kUnlockForSystemData(bLockInfo);
 }
 
 void kSchedule(){
     TCB* pstRunningTask, *pstNextTask;
-    BOOL bPreviousFlag;
-    if(kGetListCount(&(gs_stScheduler.stReadyList))==0){
+    BYTE bLockInfo;
+    if(kGetReadyTaskCount()<1){
         return;
     }
-    bPreviousFlag=kSetInterruptFlag(FALSE);
+    bLockInfo=kLockForSystemData();
     pstNextTask=kGetNextTaskToRun();
     if(pstNextTask==NULL){
-        kSetInterruptFlag(bPreviousFlag);
+        kUnlockForSystemData(bLockInfo);
         return;
     }
     pstRunningTask=gs_stScheduler.pstRunningTask;
-    kAddTaskToReadyList(pstRunningTask);
-    gs_stScheduler.pstRunningTask=pstNextTask;
-    kSwitchContext(&(pstRunningTask->stContext), &(pstNextTask->stContext));
+    if((pstRunningTask->qwFlags&TASK_FLAG_IDLE)==TASK_FLAG_IDLE){
+        gs_stScheduler.qwSpendProcessorTimeInIdleTask+=TASK_PROCESSTIME-gs_stScheduler.iProcessorTime;
+    }
+    if((pstRunningTask->qwFlags&TASK_FLAG_ENDTASK)){
+        kAddLinkToTail(&(gs_stScheduler.stWaitList), pstRunningTask);
+        gs_stScheduler.pstRunningTask=pstNextTask;
+        kSwitchContext(NULL, &(pstNextTask->stContext));
+    }
+    else{
+        kAddTaskToReadyList(pstRunningTask);
+        gs_stScheduler.pstRunningTask=pstNextTask;
+        kSwitchContext(&(pstRunningTask->stContext), &(pstNextTask->stContext));
+    }
 
     gs_stScheduler.iProcessorTime=TASK_PROCESSTIME;
-    kSetInterruptFlag(bPreviousFlag);
+    kUnlockForSystemData(bLockInfo);
 }
 
 BOOL kScheduleInInterupt(QWORD qwStackStartAddress){
-    TCB* pstRuningTask, *pstNextTask;
+    TCB* pstRunningTask, *pstNextTask;
     char* pcContextAddress;
-    char vcBuffer[20];
+    char vcBuffer[100];
+    BYTE bLockInfo;
 
+    bLockInfo=kLockForSystemData();
     pstNextTask=kGetNextTaskToRun();
     if(pstNextTask==NULL){
+        kUnlockForSystemData(bLockInfo);
         return FALSE;
     }
     pcContextAddress=(char*)(qwStackStartAddress-sizeof(CONTEXT));
 #ifdef TASK_DEBUG
     kprintf("0x%q, 0x%q\n", &(((CONTEXT*)pcContextAddress)->vqRegister[TASK_RBPOFFSET]), qwStackBaseAddress);
 #endif
-    pstRuningTask=gs_stScheduler.pstRunningTask;
-    kMemCpy(&(pstRuningTask->stContext), pcContextAddress, sizeof(CONTEXT));
-    kAddLinkToTail(&(gs_stScheduler.stReadyList), pstRuningTask);
-
+    pstRunningTask=gs_stScheduler.pstRunningTask;
+    if((pstRunningTask->qwFlags&TASK_FLAG_IDLE)==TASK_FLAG_IDLE){
+        gs_stScheduler.qwSpendProcessorTimeInIdleTask+=TASK_PROCESSTIME;
+    }
+    if(pstRunningTask->qwFlags&TASK_FLAG_ENDTASK){
+        kAddLinkToTail(&(gs_stScheduler.stWaitList), pstRunningTask);
+    }
+    else{
+        kMemCpy(&(pstRunningTask->stContext), pcContextAddress, sizeof(CONTEXT));
+        kAddLinkToTail(&(gs_stScheduler.stReadyList[GETPRIORITY(pstRunningTask->qwFlags)]), pstRunningTask);
+    }
     gs_stScheduler.pstRunningTask=pstNextTask;
+    kUnlockForSystemData(bLockInfo);
     kMemCpy(pcContextAddress, &(pstNextTask->stContext), sizeof(CONTEXT));
-    
     gs_stScheduler.iProcessorTime=TASK_PROCESSTIME;
     return TRUE;
 }
@@ -178,6 +357,27 @@ void kDecreaseProcessorTime(){
     if(gs_stScheduler.iProcessorTime>0)
         gs_stScheduler.iProcessorTime--;
 }
+
 BOOL kIsProcessorTimeExpired(){
     return (gs_stScheduler.iProcessorTime<=0);
+}
+
+QWORD kGetProcessorLoad(){
+    return gs_stScheduler.qwProcessorLoad;
+}
+
+void kHaltProcessorByLoad(){
+    int i;
+    if(gs_stScheduler.qwProcessorLoad<40){
+        for(i=0; i<6; i++)
+            kHlt();
+    }
+    else if(gs_stScheduler.qwProcessorLoad<80){
+        for(i=0; i<4; i++)
+            kHlt();
+    }
+    else if(gs_stScheduler.qwProcessorLoad<95){
+        for(i=0; i<2; i++)
+            kHlt();
+    }
 }
