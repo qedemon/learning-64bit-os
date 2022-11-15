@@ -368,15 +368,32 @@ void kTerminalCommandKillTask(const char* pcArgument){
     else{
         qwID=katoi(vcBuffer, 10);
     }
-    pstTargetTask=kGetTCBFromTCBPool(GETTCBOFFSET(qwID));
-    if((pstTargetTask==NULL)){
-        kprintf("Cannot find task[ID=0x%q]\n", qwID);
-        return;
-    }
-    if(kEndTask(pstTargetTask->stLink.qwID)){
-        kprintf("Task[ID 0x%q] stopped\n", pstTargetTask->stLink.qwID);
+    if(qwID!=0xFFFFFFFF){
+        pstTargetTask=kGetTCBFromTCBPool(GETTCBOFFSET(qwID));
+        if((pstTargetTask==NULL)){
+            kprintf("Cannot find task[ID=0x%q]\n", qwID);
+            return;
+        }
+        if(kEndTask(pstTargetTask->stLink.qwID)){
+            kprintf("Task[ID 0x%q] stopped\n", pstTargetTask->stLink.qwID);
+        }
+        else{
+            kprintf("Task[ID 0x%q] stopped abnormaly.\n", pstTargetTask->stLink.qwID);
+        }
     }
     else{
-        kprintf("Task[ID 0x%q] stopped irregularly.\n", pstTargetTask->stLink.qwID);
+        int i;
+        for(i=0; i<TASK_MAXCOUNT; i++){
+            pstTargetTask=kGetTCBFromTCBPool(GETTCBOFFSET(qwID));
+            if(ISTASKALLOCATED(pstTargetTask->stLink.qwID)){
+                kprintf("Task[ID 0x%q] stoppoed ", pstTargetTask->stLink.qwID);
+                if(kEndTask(pstTargetTask->stLink.qwID)){
+                    kprintf("\n");
+                }
+                else{
+                    kprintf("abnormaly\n");
+                }
+            }
+        }
     }
 }
