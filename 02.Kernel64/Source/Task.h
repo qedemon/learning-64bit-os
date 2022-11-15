@@ -3,6 +3,8 @@
 #include "Type.h"
 #include "LinkedList.h"
 
+#define TASK_INVALID 0xFFFFFFFFFFFFFFFF
+
 #define TASK_REGISTERCOUNT (5+19)
 #define TASK_REGISTERSIZE 8
 
@@ -107,6 +109,7 @@ void kClearOtherTask();
 
 void kInitializeScheduler();
 void kSetRunningTask(TCB* pstTCB);
+int kGetReadyTaskCount();
 TCB* kGetRunningTask();
 TCB* kGetNextTaskToRun();
 BOOL kAddTaskToReadyList(TCB* pstTCB);
