@@ -63,6 +63,6 @@ void main(){
     
     kTerminalSetCursorPos(0, wCursorY);
     kprintf("MINT64 OS Start\n");
-    kCreateTask(TASK_FLAG_LOWEST|TASK_FLAG_IDLE, (QWORD) kIdleTask);
+    kCreateTask(TASK_FLAG_LOWEST|TASK_FLAG_IDLE|TASK_FLAG_SYSTEM|TASK_FLAG_THREAD, (QWORD) kIdleTask, 0, QWORD_MAX);
     kStartTerminal();
 }

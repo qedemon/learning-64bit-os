@@ -11,8 +11,10 @@
 
 void kInitializeTask(TCB* pstTCB, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize){
     kMemSet(pstTCB->stContext.vqRegister, 0, sizeof(pstTCB->stContext.vqRegister));
-    pstTCB->stContext.vqRegister[TASK_RSPOFFSET]=(QWORD)pvStackAddress+qwStackSize;
-    pstTCB->stContext.vqRegister[TASK_RBPOFFSET]=(QWORD)pvStackAddress+qwStackSize;
+    pstTCB->stContext.vqRegister[TASK_RSPOFFSET]=((QWORD)pvStackAddress)+qwStackSize-8;
+    pstTCB->stContext.vqRegister[TASK_RBPOFFSET]=((QWORD)pvStackAddress)+qwStackSize-8;
+
+    *((QWORD*)(((QWORD)pvStackAddress)+qwStackSize-8))=(QWORD)kExitTask;
 
     pstTCB->stContext.vqRegister[TASK_CSOFFSET]=GDT_KERNELCODESEGMENT;
     pstTCB->stContext.vqRegister[TASK_DSOFFSET]=GDT_KERNELDATASEGMENT;
@@ -82,14 +84,20 @@ static SCHEDULER gs_stScheduler;
 void kInitializeScheduler(){
     int i;
     BYTE bLockInfo;
+    TCB* pstTask;
     kInitializeTCBPool();
     bLockInfo=kLockForSystemData();
     for(i=0; i<TASK_MAXREADYLISTCOUNT; i++){
         kInitializeList(&(gs_stScheduler.stReadyList[i]));
         gs_stScheduler.viExecuteCount[i]=0;
     }
-    gs_stScheduler.pstRunningTask=kAllocateTCB();
-    SETPRIORITY(gs_stScheduler.pstRunningTask->qwFlags, TASK_FLAG_HIGHEST);
+    pstTask=kAllocateTCB();
+    SETPRIORITY(pstTask->qwFlags, TASK_FLAG_HIGHEST|TASK_FLAG_PROCESS|TASK_FLAG_SYSTEM);
+    pstTask->pvMemoryAddress=(void*)0x100000;
+    pstTask->qwMemorySize=0x500000;
+    pstTask->pvStackAddress=(void*)0x600000;
+    pstTask->qwStackSize=0x100000;
+    gs_stScheduler.pstRunningTask=pstTask;
 
     gs_stScheduler.qwProcessorLoad=0;
     gs_stScheduler.qwSpendProcessorTimeInIdleTask=0;
@@ -196,8 +204,8 @@ TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress, void* pvMemoryAddress,
 
     pstProcess=kGetProcessByThread(kGetRunningTask());
     if(pstProcess==NULL){
+        kFreeTCB(pstNewTask->stLink.qwID);
         kUnlockForSystemData(bLockInfo);
-        kFreeTCB(pstNewTask);
         return NULL;
     }
     pvStackAddress=(void*)(TASK_STACKPOOLADDRESS+GETTCBOFFSET(pstNewTask->stLink.qwID)*(TASK_STACKSIZE));
@@ -282,12 +290,46 @@ void kIdleTask(){
 
         if(kGetListCount(&(gs_stScheduler.stWaitList))>0){
             while(1){
+                BYTE bLockInfo;
+                bLockInfo=kLockForSystemData();
                 pstTask=kRemoveLinkFromHead(&(gs_stScheduler.stWaitList));
                 if(pstTask==NULL){
+                    kUnlockForSystemData(bLockInfo);
                     break;
+                }
+                if(pstTask->qwFlags&TASK_FLAG_PROCESS){
+                    int iCount, i;
+                    iCount=kGetListCount(&pstTask->stChildThereadList);
+                    for(i=0; i<iCount; i++){
+                        void* pvLink;
+                        TCB* pstChild;
+                        pvLink=kRemoveLinkFromHead(&pstTask->stChildThereadList);
+                        if(pvLink==NULL){
+                            break;
+                        }
+                        pstChild=GETTCBFROMTHREADLINK(pvLink);
+                        kAddLinkToTail(&pstTask->stChildThereadList, &pstChild->stThreadLink);
+                        kEndTask(pstChild->stLink.qwID);
+                    }
+                    if(kGetListCount(&pstTask->stChildThereadList)>0){
+                        kAddLinkToTail(&gs_stScheduler.stWaitList, &pstTask);
+                        kUnlockForSystemData(bLockInfo);
+                        continue;
+                    }
+                    else{
+                        //Process Memory code reset code here.
+                    }
+                }
+                else if(pstTask->qwFlags&TASK_FLAG_THREAD){
+                    TCB* pstParentProcess;
+                    pstParentProcess=kGetProcessByThread(pstTask);
+                    if(pstParentProcess!=NULL){
+                        kRemoveLink(&pstParentProcess->stChildThereadList, pstTask->stThreadLink.qwID);
+                    }
                 }
                 kprintf("IDLE: Task ID[0x%q] is completely ended.\n", pstTask->stLink.qwID);
                 kFreeTCB(pstTask->stLink.qwID);
+                kUnlockForSystemData(bLockInfo);
             }
         }
         kSchedule();

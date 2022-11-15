@@ -2,6 +2,7 @@
 #define TASK_H
 #include "Type.h"
 #include "LinkedList.h"
+#include <stddef.h>
 
 #define TASK_INVALID 0xFFFFFFFFFFFFFFFF
 
@@ -61,6 +62,8 @@
 #define GETTCBOFFSET(ID) ((ID)&0xFFFFFFFF)
 
 #define ISTASKALLOCATED(ID) (((ID)>>32)!=0)
+
+#define GETTCBFROMTHREADLINK(x) ((TCB*)(((QWORD)x)-offsetof(TCB, stThreadLink)))
 
 #pragma pack(push, 1)
 typedef struct kContextStruct{
