@@ -16,7 +16,7 @@ void kInitializeMutex(MUTEX* pstMutex){
     pstMutex->dwLockCount=0;
 }
 
-void kLock(MUTEX* pstMutex){
+void kLockMutex(MUTEX* pstMutex){
     if(!kTestAndSet(&(pstMutex->bLockFlag), FALSE, TRUE)){
         if(pstMutex->qwTaskID==kGetRunningTask()->stLink.qwID){
             pstMutex->dwLockCount++;
@@ -33,7 +33,7 @@ void kLock(MUTEX* pstMutex){
     pstMutex->qwTaskID=kGetRunningTask()->stLink.qwID;
     pstMutex->dwLockCount=1;
 }
-void kUnlock(MUTEX* pstMutex){
+void kUnlockMutex(MUTEX* pstMutex){
     if((pstMutex->bLockFlag==FALSE)||(pstMutex->qwTaskID!=kGetRunningTask()->stLink.qwID)){
         return;
     }
