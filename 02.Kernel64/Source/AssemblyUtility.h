@@ -15,5 +15,7 @@ QWORD kReadTSC();
 
 void kHlt();
 
+BOOL kTestAndSet(volatile BYTE* pbDest, BYTE bCompare, BYTE bSource);
+
 
 #endif

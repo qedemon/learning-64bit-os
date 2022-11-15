@@ -1,6 +1,7 @@
 #include "Synchronization.h"
 #include "Utility.h"
 #include "Task.h"
+#include "AssemblyUtility.h"
 
 BYTE kLockForSystemData(void){
     return kSetInterruptFlag(FALSE);
@@ -16,18 +17,19 @@ void kInitializeMutex(MUTEX* pstMutex){
 }
 
 void kLock(MUTEX* pstMutex){
-    if(pstMutex->bLockFlag==TRUE){
+    if(!kTestAndSet(&(pstMutex->bLockFlag), FALSE, TRUE)){
         if(pstMutex->qwTaskID==kGetRunningTask()->stLink.qwID){
             pstMutex->dwLockCount++;
             return;
         }
         else{
-            while(pstMutex->bLockFlag==TRUE){
+            while(1){
+                if(kTestAndSet(&(pstMutex->bLockFlag), FALSE, TRUE))
+                    break;
                 kSchedule();
             }
         }
     }
-    pstMutex->bLockFlag=TRUE;
     pstMutex->qwTaskID=kGetRunningTask()->stLink.qwID;
     pstMutex->dwLockCount=1;
 }
