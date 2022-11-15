@@ -251,7 +251,7 @@ void kTerminalCommandCreateTask(const char* pcArgument){
     }
     itaskCount=katoi(vcBuffer, 10);
     for(i=0; i<itaskCount; i++){
-        kCreateTask(TASK_FLAG_LOW, qwTaskAddress);
+        kCreateTask(TASK_FLAG_LOW|TASK_FLAG_THREAD, qwTaskAddress, 0, QWORD_MAX);
     }
 }
 

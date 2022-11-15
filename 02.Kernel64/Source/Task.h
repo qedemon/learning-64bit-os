@@ -62,6 +62,8 @@
 
 #define ISTASKALLOCATED(ID) (((ID)>>32)!=0)
 
+#define GETTCBFROMTHREADLINK(x) ((TCB*)((QWORD)(X)-offsetof(TCB, stThreadLink)))
+
 #pragma pack(push, 1)
 typedef struct kContextStruct{
     QWORD vqRegister[TASK_REGISTERCOUNT];

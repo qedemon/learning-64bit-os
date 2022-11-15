@@ -196,8 +196,8 @@ TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress, void* pvMemoryAddress,
 
     pstProcess=kGetProcessByThread(kGetRunningTask());
     if(pstProcess==NULL){
+        kFreeTCB(pstNewTask->stLink.qwID);
         kUnlockForSystemData(bLockInfo);
-        kFreeTCB(pstNewTask);
         return NULL;
     }
     pvStackAddress=(void*)(TASK_STACKPOOLADDRESS+GETTCBOFFSET(pstNewTask->stLink.qwID)*(TASK_STACKSIZE));
@@ -282,9 +282,16 @@ void kIdleTask(){
 
         if(kGetListCount(&(gs_stScheduler.stWaitList))>0){
             while(1){
+                BYTE bLockInfo;
+                bLockInfo=kLockForSystemData();
                 pstTask=kRemoveLinkFromHead(&(gs_stScheduler.stWaitList));
                 if(pstTask==NULL){
+                    kUnlockForSystemData(bLockInfo);
                     break;
+                }
+                if(pstTask->qwFlags&TASK_FLAG_PROCESS){
+                    int iCount;
+                    iCount=kGetListCount(pstTask)
                 }
                 kprintf("IDLE: Task ID[0x%q] is completely ended.\n", pstTask->stLink.qwID);
                 kFreeTCB(pstTask->stLink.qwID);
