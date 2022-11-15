@@ -183,8 +183,8 @@ BOOL kChangePriority(QWORD qwTaskID, BYTE bPriority){
     return TRUE;
 }
 
-TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress){
-    TCB* pstNewTask;
+TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress, void* pvMemoryAddress, QWORD qwMemorySize){
+    TCB* pstNewTask, *pstProcess;
     void* pvStackAddress;
     BYTE bLockInfo;
     bLockInfo=kLockForSystemData();
@@ -193,11 +193,32 @@ TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress){
         kUnlockForSystemData(bLockInfo);
         return NULL;
     }
-    kUnlockForSystemData(bLockInfo);
+
+    pstProcess=kGetProcessByThread(kGetRunningTask());
+    if(pstProcess==NULL){
+        kUnlockForSystemData(bLockInfo);
+        kFreeTCB(pstNewTask);
+        return NULL;
+    }
     pvStackAddress=(void*)(TASK_STACKPOOLADDRESS+GETTCBOFFSET(pstNewTask->stLink.qwID)*(TASK_STACKSIZE));
     kInitializeTask(pstNewTask, qwFlag, qwEntryPointAddress, pvStackAddress, TASK_STACKSIZE);
-    bLockInfo=kLockForSystemData();
+
+    if(qwFlag&TASK_FLAG_THREAD){
+        pstNewTask->qwParentProcessID=pstProcess->stLink.qwID;
+        pstNewTask->pvMemoryAddress=pstProcess->pvMemoryAddress;
+        pstNewTask->qwMemorySize=pstProcess->qwMemorySize;
+        kAddLinkToTail(&pstProcess->stChildThereadList, &pstNewTask->stThreadLink);
+    }
+    else{
+        pstNewTask->qwParentProcessID=pstProcess->stLink.qwID;
+        pstNewTask->pvMemoryAddress=pvMemoryAddress;
+        pstNewTask->qwMemorySize=qwMemorySize;
+        kInitializeList(&pstNewTask->stChildThereadList);
+    }
+    pstNewTask->stThreadLink.qwID=pstNewTask->stLink.qwID;
+
     kAddTaskToReadyList(pstNewTask);
+    
     kUnlockForSystemData(bLockInfo);
 #ifdef TASK_DEBUG
     kprintf("0x%q -> 0x%q\n", pstNewTask, qwEntryPointAddress);
@@ -380,4 +401,16 @@ void kHaltProcessorByLoad(){
         for(i=0; i<2; i++)
             kHlt();
     }
+}
+
+static TCB* kGetProcessByThread(TCB* pstThread){
+    TCB* pstProcess;
+    if(pstThread->qwFlags&TASK_FLAG_PROCESS){
+        return pstThread;
+    }
+    pstProcess=kGetTCBFromTCBPool(GETTCBOFFSET(pstProcess->qwParentProcessID));
+    if(pstProcess->stLink.qwID!=pstThread->qwParentProcessID){
+        return NULL;
+    }
+    return pstThread;
 }
