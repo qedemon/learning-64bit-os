@@ -13,5 +13,6 @@ long kDecimalStringToLong(const char* str);
 QWORD kHexStringToQWORD(const char* str);
 int kDecimalToString(long lValue, char* pcDest);
 int kHexToString(unsigned long lValue, char* pcDest);
+int kDoubleToString(double dValue, char* pcDest);
 int kReverseString(char* str);
 #endif

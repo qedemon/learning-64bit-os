@@ -26,6 +26,7 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"testLink", "testLink", kTerminalCommandTestLinkedList},
     {"cpuload", "Get CPU Processing Load", kTerminalCommandGetProcessorLoad},
     {"chpri", "chpri 0x30002(ID) 3(priority)", kTerminalCommandChangePriority},
+    {"testfloat", "test float caculation", kTerminalCommandTestFPU},
 };
 
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** ppstTerminalCmd, int* piSpaceIndex){
@@ -401,4 +402,12 @@ void kTerminalCommandKillTask(const char* pcArgument){
             }
         }
     }
+}
+
+void kTerminalCommandTestFPU(const char* pcArgument){
+    double a, b, c;
+    a=0.1;
+    b=1.1;
+    c=(a+b);
+    kprintf("0.1 + 1.1 = %f\n", c);
 }

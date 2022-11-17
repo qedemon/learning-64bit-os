@@ -8,6 +8,7 @@ global kReadTSC
 global kGetRIPValue
 global kHlt
 global kTestAndSet
+global kInitializeFPU, kSaveFPUContext, kLoadFPUContext, kSetTSBit, kClearTSBit
 
 kInPortByte:
     push rdx
@@ -62,4 +63,21 @@ kTestAndSet:
     ret
 .SUCCESS:
     mov rax, 1
+    ret
+kInitializeFPU:
+    finit
+    ret
+kSaveFPUContext:
+    fxsave [rdi]
+    ret
+kLoadFPUContext:
+    fxrstor [rdi]
+    ret
+kSetTSBit:
+    mov rax, cr0
+    or rax, 0x08
+    mov cr0, rax
+    ret
+kClearTSBit:
+    clts
     ret

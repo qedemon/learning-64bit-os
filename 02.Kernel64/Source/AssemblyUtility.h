@@ -17,5 +17,10 @@ void kHlt();
 
 BOOL kTestAndSet(volatile BYTE* pbDest, BYTE bCompare, BYTE bSource);
 
+void kInitializeFPU();
+void kSaveFPUContext(void* vpFPUContext);
+void kLoadFPUContext(void* vpFPUContext);
+void kSetTSBit();
+void kClearTSBit();
 
 #endif

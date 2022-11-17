@@ -83,6 +83,12 @@ int kVSPrintf(char* pcBuffer, const char* pcFormatString, va_list ap){
                     iBufferIndex+=kitoa(qwValue, pcBuffer+iBufferIndex, 16);
                     break;
                 }
+                case 'f':{
+                    //double fValue=(double)(va_arg(ap, double));
+                    //iBufferIndex+=kitoa((int)fValue, pcBuffer+iBufferIndex, 10);
+                    //iBufferIndex+=kDoubleToString((double) fValue, pcBuffer+iBufferIndex);
+                    break;
+                }
                 case '%':
                     pcBuffer[iBufferIndex]='%';
                     iBufferIndex++;
@@ -192,6 +198,23 @@ int kHexToString(unsigned long lValue, char* pcDest){
     else
         kReverseString(pcDest);
     return i;
+}
+
+
+int kDoubleToString(double dValue, char* pcDest){
+    /*int i, temp;
+    i=0;
+    if(dValue<0){
+        dValue=-dValue;
+        pcDest[i]='-';
+        i=1;
+    }
+    temp=(int)dValue;
+    i+=kitoa(temp, &pcDest[i], 10);
+    dValue-=(double)temp;
+    pcDest[i]=0;
+    return i;*/
+    return kitoa((int)dValue, pcDest, 10);
 }
 
 int kReverseString(char* str){

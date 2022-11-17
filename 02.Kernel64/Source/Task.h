@@ -116,6 +116,8 @@ typedef struct kSchedulerStruct{
 
     QWORD qwProcessorLoad;
     QWORD qwSpendProcessorTimeInIdleTask;
+
+    QWORD qwLastFPUUsedTaskID;
 }SCHEDULER;
 
 
@@ -153,5 +155,8 @@ void kIdleTask();
 void kHaltProcessorByLoad();
 
 static TCB* kGetProcessByThread(TCB* pstThread);
+
+QWORD kGetLastFPUUsedTaskID();
+void kSetLastFPUUsedTaskID(QWORD qwTaskID);
 
 #endif
