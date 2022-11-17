@@ -40,7 +40,6 @@ void kPrintString(int iX, int iY, const char* pcString){
     }
 }
 
-
 BOOL kSetInterruptFlag(BOOL bEnableInterrupt){
     QWORD qwRFLAGS;
     qwRFLAGS = kReadRFLAGS();
@@ -108,4 +107,17 @@ QWORD kMeasureCPUSpeed(){
     }
     kSetInterruptFlag(bInterrupt);
     return qwTotalTSC/10;
+}
+
+#include "TextModeTerminal.h"
+
+static BOOL gs_bReport=FALSE;
+void kRequireReport(){
+    gs_bReport=TRUE;
+}
+void kReport(const char* vcReportMessage){
+    if(gs_bReport==TRUE){
+        gs_bReport=FALSE;
+        kprintf("%s\n", vcReportMessage);
+    }
 }
