@@ -136,7 +136,6 @@ int kTerminalPrintString(WORD iCursorX, WORD iCursorY, const char* str){
             iOffset-=TERMINAL_WIDTH;
         }
     }
-    pVGAData[iOffset].bChar=0;
     return iOffset;
 }
 

@@ -17,7 +17,7 @@ typedef struct kMutexStruct{
 #pragma pack(pop)
 
 void kInitializeMutex(MUTEX* pstMutex);
-void kLock(MUTEX* pstMutex);
-void kUnlock(MUTEX* pstMutex);
+void kLockMutex(MUTEX* pstMutex);
+void kUnlockMutex(MUTEX* pstMutex);
 
 #endif

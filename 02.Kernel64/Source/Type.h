@@ -7,6 +7,8 @@
 #define QWORD unsigned long
 #define BOOL unsigned char
 
+#define QWORD_MAX 0xFFFFFFFFFFFFFFFF
+
 #define NULL 0
 
 #define TRUE 1

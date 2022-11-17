@@ -2,6 +2,7 @@
 #define TASK_H
 #include "Type.h"
 #include "LinkedList.h"
+#include <stddef.h>
 
 #define TASK_INVALID 0xFFFFFFFFFFFFFFFF
 
@@ -51,6 +52,9 @@
 #define TASK_FLAG_WAIT 0xFF
 #define TASK_FLAG_ENDTASK 0x8000000000000000
 #define TASK_FLAG_IDLE 0x0800000000000000
+#define TASK_FLAG_SYSTEM 0x4000000000000000
+#define TASK_FLAG_PROCESS 0x2000000000000000
+#define TASK_FLAG_THREAD 0x1000000000000000
 
 #define GETPRIORITY(x) ((x)&0xFF)
 #define SETPRIORITY(x, priority) ((x)=((x)&0xFFFFFFFFFFFFFF00)|priority)
@@ -58,6 +62,8 @@
 #define GETTCBOFFSET(ID) ((ID)&0xFFFFFFFF)
 
 #define ISTASKALLOCATED(ID) (((ID)>>32)!=0)
+
+#define GETTCBFROMTHREADLINK(x) ((TCB*)(((QWORD)x)-offsetof(TCB, stThreadLink)))
 
 #pragma pack(push, 1)
 typedef struct kContextStruct{
@@ -68,6 +74,15 @@ typedef struct kTaskControlBlockStruct{
     LISTLINK stLink;
     CONTEXT stContext;
     QWORD qwFlags;
+
+    void* pvMemoryAddress;
+    QWORD qwMemorySize;
+
+    LISTLINK stThreadLink;
+    LIST stChildThereadList;
+
+    QWORD qwParentProcessID;
+
     void* pvStackAddress;
     QWORD qwStackSize;
 }TCB;
@@ -101,7 +116,7 @@ void kInitializeTCBPool();
 TCB* kAllocateTCB();
 void kFreeTCB(QWORD qwID);
 
-TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress);
+TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress, void* pvMemoryAddress, QWORD qwMemorySize);
 BOOL kChangePriority(QWORD qwTaskID, BYTE bPriority);
 BOOL kEndTask(QWORD qwTaskID);
 void kExitTask();
@@ -124,5 +139,7 @@ QWORD kGetProcessorLoad();
 
 void kIdleTask();
 void kHaltProcessorByLoad();
+
+static TCB* kGetProcessByThread(TCB* pstThread);
 
 #endif
