@@ -17,4 +17,7 @@ void kWaitms(long lMillisecond);
 char* kConvertDayOfWeekToString(BYTE bDayOfWeek);
 QWORD kMeasureCPUSpeed();
 
+void kRequireReport();
+void kReport(const char* vcReportMessage);
+
 #endif

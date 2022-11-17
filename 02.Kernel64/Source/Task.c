@@ -97,10 +97,14 @@ void kInitializeScheduler(){
     pstTask->qwMemorySize=0x500000;
     pstTask->pvStackAddress=(void*)0x600000;
     pstTask->qwStackSize=0x100000;
+    pstTask->bFPUUsed=0;
     gs_stScheduler.pstRunningTask=pstTask;
 
     gs_stScheduler.qwProcessorLoad=0;
     gs_stScheduler.qwSpendProcessorTimeInIdleTask=0;
+
+    gs_stScheduler.qwLastFPUUsedTaskID=TASK_INVALID;
+
     kUnlockForSystemData(bLockInfo);
 }
 
@@ -221,9 +225,10 @@ TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress, void* pvMemoryAddress,
         pstNewTask->qwParentProcessID=pstProcess->stLink.qwID;
         pstNewTask->pvMemoryAddress=pvMemoryAddress;
         pstNewTask->qwMemorySize=qwMemorySize;
-        kInitializeList(&pstNewTask->stChildThereadList);
     }
+    kInitializeList(&pstNewTask->stChildThereadList);
     pstNewTask->stThreadLink.qwID=pstNewTask->stLink.qwID;
+    pstNewTask->bFPUUsed=0;
 
     kAddTaskToReadyList(pstNewTask);
     
@@ -367,6 +372,14 @@ void kSchedule(){
     if((pstRunningTask->qwFlags&TASK_FLAG_IDLE)==TASK_FLAG_IDLE){
         gs_stScheduler.qwSpendProcessorTimeInIdleTask+=TASK_PROCESSTIME-gs_stScheduler.iProcessorTime;
     }
+
+    if(pstNextTask->stLink.qwID!=gs_stScheduler.qwLastFPUUsedTaskID){
+        kSetTSBit();
+    }
+    else{
+        kClearTSBit();
+    }
+
     if((pstRunningTask->qwFlags&TASK_FLAG_ENDTASK)){
         kAddLinkToTail(&(gs_stScheduler.stWaitList), pstRunningTask);
         gs_stScheduler.pstRunningTask=pstNextTask;
@@ -402,6 +415,14 @@ BOOL kScheduleInInterupt(QWORD qwStackStartAddress){
     if((pstRunningTask->qwFlags&TASK_FLAG_IDLE)==TASK_FLAG_IDLE){
         gs_stScheduler.qwSpendProcessorTimeInIdleTask+=TASK_PROCESSTIME;
     }
+
+    if(pstNextTask->stLink.qwID!=gs_stScheduler.qwLastFPUUsedTaskID){
+        kSetTSBit();
+    }
+    else{
+        kClearTSBit();
+    }
+
     if(pstRunningTask->qwFlags&TASK_FLAG_ENDTASK){
         kAddLinkToTail(&(gs_stScheduler.stWaitList), pstRunningTask);
     }
@@ -455,4 +476,11 @@ static TCB* kGetProcessByThread(TCB* pstThread){
         return NULL;
     }
     return pstThread;
+}
+
+QWORD kGetLastFPUUsedTaskID(){
+    return gs_stScheduler.qwLastFPUUsedTaskID;
+}
+void kSetLastFPUUsedTaskID(QWORD qwTaskID){
+    gs_stScheduler.qwLastFPUUsedTaskID=qwTaskID;
 }

@@ -6,6 +6,8 @@
 #include "RTC.h"
 #include "Task.h"
 #include "Type.h"
+#include "Synchronization.h"
+#include "AssemblyUtility.h"
 
 static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"help", "Show Help", kTerminalCommandHelp},
@@ -24,6 +26,7 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"testLink", "testLink", kTerminalCommandTestLinkedList},
     {"cpuload", "Get CPU Processing Load", kTerminalCommandGetProcessorLoad},
     {"chpri", "chpri 0x30002(ID) 3(priority)", kTerminalCommandChangePriority},
+    {"testfloat", "test float caculation", kTerminalCommandTestFPU},
 };
 
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** ppstTerminalCmd, int* piSpaceIndex){
@@ -204,7 +207,7 @@ void kTestTask1(){
         bData++;
         //kSchedule();
     }
-    kExitTask();
+    //kExitTask();
 }
 
 void kTestTask2(){
@@ -222,7 +225,7 @@ void kTestTask2(){
         i++;
         //kSchedule();
     }
-    kExitTask();
+    //kExitTask();
 }
 
 void kTerminalCommandCreateTask(const char* pcArgument){
@@ -257,6 +260,7 @@ void kTerminalCommandCreateTask(const char* pcArgument){
 
 void kTerminalCommandStopOtherTasks(const char* pcArgument){
     kClearOtherTask();
+    kprintf("stop interrupt\n");
 }
 
 void kTerminalCommandShowTaskList(const char* pcArgument){
@@ -384,8 +388,10 @@ void kTerminalCommandKillTask(const char* pcArgument){
     else{
         int i;
         for(i=0; i<TASK_MAXCOUNT; i++){
-            pstTargetTask=kGetTCBFromTCBPool(GETTCBOFFSET(qwID));
+            pstTargetTask=kGetTCBFromTCBPool(i);
             if(ISTASKALLOCATED(pstTargetTask->stLink.qwID)){
+                if(pstTargetTask->qwFlags&TASK_FLAG_SYSTEM)
+                    continue;
                 kprintf("Task[ID 0x%q] stoppoed ", pstTargetTask->stLink.qwID);
                 if(kEndTask(pstTargetTask->stLink.qwID)){
                     kprintf("\n");
@@ -396,4 +402,12 @@ void kTerminalCommandKillTask(const char* pcArgument){
             }
         }
     }
+}
+
+void kTerminalCommandTestFPU(const char* pcArgument){
+    double a, b, c;
+    a=0.1;
+    b=1.1;
+    c=(a+b);
+    kprintf("0.1 + 1.1 = %f\n", VAFLOAT(c));
 }

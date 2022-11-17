@@ -1,4 +1,5 @@
 #include "InterruptHandler.h"
+#include "AssemblyUtility.h"
 #include "Utility.h"
 #include "PIC.h"
 #include "PIT.h"
@@ -17,6 +18,37 @@ void kCommonExceptionHandler(int iVectorNumber, QWORD qwErrorCode){
     kprintf("Error Code : 0x%q", qwErrorCode);
     kprintf("=======================================\n");
     while(1);
+}
+
+void kDeviceNotAvailableHandler(int iVectorNumber){
+    char vcBuffer[]="[VEC:  ]";
+    TCB* pstRunningTask, *pstFPULastUsedTask;
+    QWORD qwFPULastUseTaskID;
+
+    vcBuffer[5]=iVectorNumber/10+'0';
+    vcBuffer[6]=iVectorNumber%10+'0';
+    kPrintString(0, 0, vcBuffer);
+
+    kClearTSBit();
+    qwFPULastUseTaskID=kGetLastFPUUsedTaskID();
+    pstRunningTask=kGetRunningTask();
+    if(qwFPULastUseTaskID==pstRunningTask->stLink.qwID){
+        return;
+    }
+    else if(qwFPULastUseTaskID!=TASK_INVALID){
+        pstFPULastUsedTask=kGetTCBFromTCBPool(GETTCBOFFSET(qwFPULastUseTaskID));
+        if((pstFPULastUsedTask!=NULL)&&(pstFPULastUsedTask->stLink.qwID==qwFPULastUseTaskID)){
+            kSaveFPUContext(&pstFPULastUsedTask->vqwFPUContext);
+        }
+    }
+    if(pstRunningTask->bFPUUsed==FALSE){
+        kInitializeFPU();
+        pstRunningTask->bFPUUsed=TRUE;
+    }
+    else{
+        kLoadFPUContext(&pstRunningTask->vqwFPUContext);
+    }
+    kSetLastFPUUsedTaskID(pstRunningTask->stLink.qwID);
 }
 
 void kCommonInterruptHandler(int iVectorNumber){

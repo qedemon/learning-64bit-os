@@ -14,6 +14,8 @@
 #define TRUE 1
 #define FALSE 0
 
+#define VAFLOAT(f) (*((QWORD*) &(f)))
+
 #pragma pack(push, 1)
 typedef struct kCharStruct{
     BYTE bChar;
