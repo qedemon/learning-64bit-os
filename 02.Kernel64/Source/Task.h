@@ -69,24 +69,35 @@
 typedef struct kContextStruct{
     QWORD vqRegister[TASK_REGISTERCOUNT];
 }CONTEXT;
+#pragma pack(pop)
 
+#pragma pack(push, 16)
 typedef struct kTaskControlBlockStruct{
     LISTLINK stLink;
+
+    LISTLINK stThreadLink;
+
+    QWORD vqwFPUContext[512/8];
+
     CONTEXT stContext;
+
     QWORD qwFlags;
+
+    LIST stChildThereadList;
+    QWORD qwParentProcessID;
 
     void* pvMemoryAddress;
     QWORD qwMemorySize;
 
-    LISTLINK stThreadLink;
-    LIST stChildThereadList;
-
-    QWORD qwParentProcessID;
-
     void* pvStackAddress;
     QWORD qwStackSize;
+
+    BOOL bFPUUsed;
 }TCB;
 
+#pragma pack(pop)
+
+#pragma pack(push, 1)
 typedef struct kTCBPoolManager{
     TCB* pstStartAddress;
     int iMaxCount;
@@ -106,6 +117,7 @@ typedef struct kSchedulerStruct{
     QWORD qwProcessorLoad;
     QWORD qwSpendProcessorTimeInIdleTask;
 }SCHEDULER;
+
 
 #pragma pack(pop)
 
