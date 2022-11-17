@@ -6,6 +6,8 @@
 #include "RTC.h"
 #include "Task.h"
 #include "Type.h"
+#include "Synchronization.h"
+#include "AssemblyUtility.h"
 
 static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"help", "Show Help", kTerminalCommandHelp},
@@ -204,7 +206,7 @@ void kTestTask1(){
         bData++;
         //kSchedule();
     }
-    kExitTask();
+    //kExitTask();
 }
 
 void kTestTask2(){
@@ -222,7 +224,7 @@ void kTestTask2(){
         i++;
         //kSchedule();
     }
-    kExitTask();
+    //kExitTask();
 }
 
 void kTerminalCommandCreateTask(const char* pcArgument){
@@ -257,6 +259,7 @@ void kTerminalCommandCreateTask(const char* pcArgument){
 
 void kTerminalCommandStopOtherTasks(const char* pcArgument){
     kClearOtherTask();
+    kprintf("stop interrupt\n");
 }
 
 void kTerminalCommandShowTaskList(const char* pcArgument){
@@ -384,8 +387,10 @@ void kTerminalCommandKillTask(const char* pcArgument){
     else{
         int i;
         for(i=0; i<TASK_MAXCOUNT; i++){
-            pstTargetTask=kGetTCBFromTCBPool(GETTCBOFFSET(qwID));
+            pstTargetTask=kGetTCBFromTCBPool(i);
             if(ISTASKALLOCATED(pstTargetTask->stLink.qwID)){
+                if(pstTargetTask->qwFlags&TASK_FLAG_SYSTEM)
+                    continue;
                 kprintf("Task[ID 0x%q] stoppoed ", pstTargetTask->stLink.qwID);
                 if(kEndTask(pstTargetTask->stLink.qwID)){
                     kprintf("\n");
