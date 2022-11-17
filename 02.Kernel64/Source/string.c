@@ -202,7 +202,8 @@ int kHexToString(unsigned long lValue, char* pcDest){
 
 
 int kDoubleToString(double dValue, char* pcDest){
-    /*int i, temp;
+    int i, temp;
+    int j;
     i=0;
     if(dValue<0){
         dValue=-dValue;
@@ -212,9 +213,16 @@ int kDoubleToString(double dValue, char* pcDest){
     temp=(int)dValue;
     i+=kitoa(temp, &pcDest[i], 10);
     dValue-=(double)temp;
+    pcDest[i]='.';
+    i++;
+    for(j=0; j<2; j++){
+        dValue=dValue*10;
+        temp=(int)dValue;
+        dValue-=(double)temp;
+        i+=kitoa(temp, &pcDest[i], 10);
+    }
     pcDest[i]=0;
-    return i;*/
-    return kitoa((int)dValue, pcDest, 10);
+    return i;
 }
 
 int kReverseString(char* str){
