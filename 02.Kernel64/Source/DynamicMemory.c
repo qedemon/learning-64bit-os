@@ -18,6 +18,7 @@ static int kCalculateMetaBlockCount(QWORD qwDynamicRamSize){
     return (qwBlockCountOfSmallestBlock+dwSizeOfAllocatedBlockIndex+dwSizeofBitmap+DYNAMICMEMORY_MIN_SIZE-1)/DYNAMICMEMORY_MIN_SIZE;
 }
 
+
 static QWORD kCalculateDynamicMemorySize(){
     QWORD qwRAMSize;
     qwRAMSize=kGetTotalRamSize()<<20;
