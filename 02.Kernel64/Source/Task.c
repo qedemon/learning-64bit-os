@@ -9,6 +9,8 @@
 #include "PIT.h"
 #include "Synchronization.h"
 
+static TCB* kGetProcessByThread(TCB* pstThread);
+
 void kInitializeTask(TCB* pstTCB, QWORD qwFlags, QWORD qwEntryPointAddress, void* pvStackAddress, QWORD qwStackSize){
     kMemSet(pstTCB->stContext.vqRegister, 0, sizeof(pstTCB->stContext.vqRegister));
     pstTCB->stContext.vqRegister[TASK_RSPOFFSET]=((QWORD)pvStackAddress)+qwStackSize-8;

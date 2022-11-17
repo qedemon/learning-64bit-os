@@ -154,8 +154,6 @@ QWORD kGetProcessorLoad();
 void kIdleTask();
 void kHaltProcessorByLoad();
 
-static TCB* kGetProcessByThread(TCB* pstThread);
-
 QWORD kGetLastFPUUsedTaskID();
 void kSetLastFPUUsedTaskID(QWORD qwTaskID);
 
