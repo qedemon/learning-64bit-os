@@ -97,6 +97,7 @@ void kInitializeScheduler(){
     pstTask->qwMemorySize=0x500000;
     pstTask->pvStackAddress=(void*)0x600000;
     pstTask->qwStackSize=0x100000;
+    pstTask->bFPUUsed=0;
     gs_stScheduler.pstRunningTask=pstTask;
 
     gs_stScheduler.qwProcessorLoad=0;
@@ -221,9 +222,10 @@ TCB* kCreateTask(QWORD qwFlag, QWORD qwEntryPointAddress, void* pvMemoryAddress,
         pstNewTask->qwParentProcessID=pstProcess->stLink.qwID;
         pstNewTask->pvMemoryAddress=pvMemoryAddress;
         pstNewTask->qwMemorySize=qwMemorySize;
-        kInitializeList(&pstNewTask->stChildThereadList);
     }
+    kInitializeList(&pstNewTask->stChildThereadList);
     pstNewTask->stThreadLink.qwID=pstNewTask->stLink.qwID;
+    pstNewTask->bFPUUsed=0;
 
     kAddTaskToReadyList(pstNewTask);
     
