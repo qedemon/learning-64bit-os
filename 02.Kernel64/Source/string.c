@@ -84,9 +84,9 @@ int kVSPrintf(char* pcBuffer, const char* pcFormatString, va_list ap){
                     break;
                 }
                 case 'f':{
-                    //double fValue=(double)(va_arg(ap, double));
-                    //iBufferIndex+=kitoa((int)fValue, pcBuffer+iBufferIndex, 10);
-                    //iBufferIndex+=kDoubleToString((double) fValue, pcBuffer+iBufferIndex);
+                    QWORD qwTemp=(QWORD)(va_arg(ap, QWORD));
+                    double fValue=*((double*)&qwTemp);
+                    iBufferIndex+=kitoa((int)fValue, pcBuffer+iBufferIndex, 10);
                     break;
                 }
                 case '%':

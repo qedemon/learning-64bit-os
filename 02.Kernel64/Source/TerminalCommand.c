@@ -409,5 +409,5 @@ void kTerminalCommandTestFPU(const char* pcArgument){
     a=0.1;
     b=1.1;
     c=(a+b);
-    kprintf("0.1 + 1.1 = %f\n", c);
+    kprintf("0.1 + 1.1 = %f\n", VAFLOAT(c));
 }
