@@ -89,14 +89,18 @@ static int kFindBlockLevelForRquiredMemorySize(QWORD qwMemorySize){
 
 
 void* kAllocateDynamicMemory(QWORD qwRequiredSize){
-    int i, iRequiredLevel, iOffset;
+    int i, iRequiredLevel, iOffset, iExistLevel;
+    QWORD* pqwBitmapData;
     if(qwRequiredSize>(gs_stDynamicMemory.qwEndAddress-gs_stDynamicMemory.qwStartAddress-gs_stDynamicMemory.qwUsedSize)){
         return NULL;
     }
     iRequiredLevel=kFindBlockLevelForRquiredMemorySize(qwRequiredSize);
+    if(iRequiredLevel<0){
+        return NULL;s
+    }
     for(i=iRequiredLevel; i<gs_stDynamicMemory.iMaxLevelCount; i++){
         if(gs_stDynamicMemory.pstBitMapOfLevel[i].qwExistBitCount>0){
-            QWORD* pqwBitmapData=(QWORD*) &gs_stDynamicMemory.pstBitMapOfLevel[i].pbBitmap;
+            pqwBitmapData=(QWORD*) &gs_stDynamicMemory.pstBitMapOfLevel[i].pbBitmap;
             iOffset=0;
             while(*pqwBitmapData==0){
                 iOffset+=64;
@@ -105,6 +109,11 @@ void* kAllocateDynamicMemory(QWORD qwRequiredSize){
             while(((*pqwBitmapData)&(DYNAMICMEMORY_EXIST<<(iOffset%64)))==0){
                 iOffset++;
             }
+            break;
         }
+    }
+    iExistLevel=i;
+    while(iExistLevel!=iRequiredLevel){
+        
     }
 }
