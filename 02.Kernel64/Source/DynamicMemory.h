@@ -33,5 +33,6 @@ typedef struct kDynamicMemoryManagerStruct{
 
 void kInitializeDynamicMemory();
 void* kAllocateDynamicMemory(QWORD qwRequiredSize);
+BOOL kFreeDynamicMemory(void* vpMemoryAddress);
 
 #endif

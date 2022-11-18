@@ -1,6 +1,7 @@
 #include "DynamicMemory.h"
 #include "Utility.h"
 #include "TextModeTerminal.h"
+#include "Synchronization.h"
 
 static QWORD kCalculateDynamicMemorySize(){
     QWORD qwTotalRamSize;
@@ -76,8 +77,8 @@ void kInitializeDynamicMemory(){
 
 static int kFindBlockLevelForRquiredMemorySize(QWORD qwMemorySize){
     int iLevel;
-    for(iLevel=0; iLevel<gs_stDynamicMemory.iMaxLevelCount; i++){
-        if(qwMemorySize<=(gs_stDynamicMemory.iBlockCountOfSmallestBlock<<i)){
+    for(iLevel=0; iLevel<gs_stDynamicMemory.iMaxLevelCount; iLevel++){
+        if(qwMemorySize<=(gs_stDynamicMemory.iBlockCountOfSmallestBlock<<iLevel)){
             break;
         }
     }
@@ -87,33 +88,114 @@ static int kFindBlockLevelForRquiredMemorySize(QWORD qwMemorySize){
     return iLevel;
 }
 
+static BOOL kSetBitMap(BITMAP* pstTargetBitmap, int iOffset, BOOL bExist){
+    if(bExist==DYNAMICMEMORY_EXIST){
+        if((pstTargetBitmap->pbBitmap[iOffset/8]&(DYNAMICMEMORY_EXIST<<(iOffset%8)))==0){
+            pstTargetBitmap->qwExistBitCount++;
+            pstTargetBitmap->pbBitmap[iOffset/8]|=(DYNAMICMEMORY_EXIST<<(iOffset%8));
+            return TRUE;
+        }
+        return FALSE;
+    }
+    else{
+        if((pstTargetBitmap->pbBitmap[iOffset/8]&(DYNAMICMEMORY_EXIST<<(iOffset%8)))){
+            pstTargetBitmap->qwExistBitCount--;
+            pstTargetBitmap->pbBitmap[iOffset/8]&=~(DYNAMICMEMORY_EXIST<<(iOffset%8));
+            return TRUE;
+        }
+        return FALSE;
+    }
+}
+
+static BYTE kGetBitMap(BITMAP* pstBitmap, int iOffset){
+    if(pstBitmap->qwExistBitCount==0)
+        return DYNAMICMEMORY_EMPTY;
+    if(pstBitmap->pbBitmap[iOffset/8]&(DYNAMICMEMORY_EXIST<<(iOffset%8))){
+        return DYNAMICMEMORY_EXIST;
+    }
+    else{
+        return DYNAMICMEMORY_EMPTY;
+    }
+}
 
 void* kAllocateDynamicMemory(QWORD qwRequiredSize){
-    int i, iRequiredLevel, iOffset, iExistLevel;
+    int i, iRequiredLevel, iExistLevel;
     QWORD* pqwBitmapData;
+    QWORD qwOffset;
+    BYTE bLockInfo;
+
+    bLockInfo=kLockForSystemData();
     if(qwRequiredSize>(gs_stDynamicMemory.qwEndAddress-gs_stDynamicMemory.qwStartAddress-gs_stDynamicMemory.qwUsedSize)){
         return NULL;
     }
     iRequiredLevel=kFindBlockLevelForRquiredMemorySize(qwRequiredSize);
     if(iRequiredLevel<0){
-        return NULL;s
+        return NULL;
     }
     for(i=iRequiredLevel; i<gs_stDynamicMemory.iMaxLevelCount; i++){
         if(gs_stDynamicMemory.pstBitMapOfLevel[i].qwExistBitCount>0){
             pqwBitmapData=(QWORD*) &gs_stDynamicMemory.pstBitMapOfLevel[i].pbBitmap;
-            iOffset=0;
+            qwOffset=0;
             while(*pqwBitmapData==0){
-                iOffset+=64;
+                qwOffset+=64;
                 pqwBitmapData++;
             }
-            while(((*pqwBitmapData)&(DYNAMICMEMORY_EXIST<<(iOffset%64)))==0){
-                iOffset++;
+            while(((*pqwBitmapData)&(DYNAMICMEMORY_EXIST<<(qwOffset%64)))==0){
+                qwOffset++;
             }
             break;
         }
     }
+    if(i==gs_stDynamicMemory.iMaxLevelCount)
+        return NULL;
+    
     iExistLevel=i;
-    while(iExistLevel!=iRequiredLevel){
-        
+    kSetBitMap(&gs_stDynamicMemory.pstBitMapOfLevel[iExistLevel], qwOffset, DYNAMICMEMORY_EMPTY);
+    while(iExistLevel>iRequiredLevel){
+        iExistLevel--;
+        qwOffset<<=1;
+        //kSetBitMap(&gs_stDynamicMemory.pstBitMapOfLevel[iExistLevel], qwOffset, DYNAMICMEMORY_EMPTY);
+        kSetBitMap(&gs_stDynamicMemory.pstBitMapOfLevel[iExistLevel], qwOffset+1, DYNAMICMEMORY_EXIST);
     }
+    gs_stDynamicMemory.pbAllocatedBlockListIndex[qwOffset<<iRequiredLevel]=iRequiredLevel;
+    gs_stDynamicMemory.qwUsedSize+=(DYNAMICMEMORY_MIN_SIZE<<iRequiredLevel);
+    kUnlockForSystemData(bLockInfo);
+    return (void*)(gs_stDynamicMemory.qwStartAddress+(qwOffset<<iRequiredLevel)*DYNAMICMEMORY_MIN_SIZE);
+}
+
+BOOL kFreeDynamicMemory(void* vpMemoryAddress){
+    int iLevel, i;
+    QWORD qwOffset;
+    BYTE bLockInfo;
+    qwOffset=(QWORD)vpMemoryAddress/DYNAMICMEMORY_MIN_SIZE;
+    bLockInfo=kLockForSystemData();
+    iLevel=gs_stDynamicMemory.pbAllocatedBlockListIndex[qwOffset];
+    if(iLevel>=gs_stDynamicMemory.iMaxLevelCount){
+        kUnlockForSystemData(bLockInfo);
+        return FALSE;
+    }
+    qwOffset>>=iLevel;
+    for(i=iLevel; i<gs_stDynamicMemory.iMaxLevelCount; i++){
+        kSetBitMap(&gs_stDynamicMemory.pstBitMapOfLevel[i], qwOffset, DYNAMICMEMORY_EXIST);
+        if(i==gs_stDynamicMemory.iMaxLevelCount-1){
+            break;
+        }
+        if(qwOffset%2==0){
+            if(kGetBitMap(&gs_stDynamicMemory.pstBitMapOfLevel[i], qwOffset+1)==DYNAMICMEMORY_EMPTY){
+                break;
+            }
+            kSetBitMap(&gs_stDynamicMemory.pstBitMapOfLevel[i], qwOffset, DYNAMICMEMORY_EMPTY);
+            kSetBitMap(&gs_stDynamicMemory.pstBitMapOfLevel[i], qwOffset+1, DYNAMICMEMORY_EMPTY);
+        }
+        else{
+            if(kGetBitMap(&gs_stDynamicMemory.pstBitMapOfLevel[i], qwOffset-1)==DYNAMICMEMORY_EMPTY){
+                break;
+            }
+            kSetBitMap(&gs_stDynamicMemory.pstBitMapOfLevel[i], qwOffset, DYNAMICMEMORY_EMPTY);
+            kSetBitMap(&gs_stDynamicMemory.pstBitMapOfLevel[i], qwOffset-1, DYNAMICMEMORY_EMPTY);
+        }
+        qwOffset>>1;
+    }
+    kUnlockForSystemData(bLockInfo);
+    return TRUE;
 }
