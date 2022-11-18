@@ -365,6 +365,14 @@ void kSchedule(){
         return;
     }
     bLockInfo=kLockForSystemData();
+    {   
+        char vcBuffer[100];
+        QWORD qwRunningTaskID=kGetRunningTask()->stLink.qwID;
+        ksprintf(vcBuffer, "Lock %s 0x%q\n", bLockInfo?"TRUE":"FALSE", qwRunningTaskID);
+        if(kReport(vcBuffer)&&(bLockInfo==FALSE)){
+            kRequireReport();
+        }
+    }
     pstNextTask=kGetNextTaskToRun();
     if(pstNextTask==NULL){
         kUnlockForSystemData(bLockInfo);
@@ -394,6 +402,7 @@ void kSchedule(){
     }
 
     gs_stScheduler.iProcessorTime=TASK_PROCESSTIME;
+    
     kUnlockForSystemData(bLockInfo);
 }
 

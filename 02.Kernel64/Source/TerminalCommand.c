@@ -259,8 +259,10 @@ void kTerminalCommandCreateTask(const char* pcArgument){
 }
 
 void kTerminalCommandStopOtherTasks(const char* pcArgument){
-    kClearOtherTask();
+    //kClearOtherTask();
     kprintf("stop interrupt\n");
+    kSetInterruptFlag(FALSE);
+    kRequireReport();
 }
 
 void kTerminalCommandShowTaskList(const char* pcArgument){
