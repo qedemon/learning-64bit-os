@@ -368,10 +368,10 @@ void kSchedule(){
     {   
         char vcBuffer[100];
         QWORD qwRunningTaskID=kGetRunningTask()->stLink.qwID;
-        ksprintf(vcBuffer, "Lock %s 0x%q\n", bLockInfo?"TRUE":"FALSE", qwRunningTaskID);
-        if(kReport(vcBuffer)&&(bLockInfo==FALSE)){
+        /*ksprintf(vcBuffer, "Lock %s 0x%q\n", bLockInfo?"TRUE":"FALSE", qwRunningTaskID);
+        if(kReport("")&&(bLockInfo==FALSE)){
             kRequireReport();
-        }
+        }*/
     }
     pstNextTask=kGetNextTaskToRun();
     if(pstNextTask==NULL){
@@ -396,6 +396,13 @@ void kSchedule(){
         kSwitchContext(NULL, &(pstNextTask->stContext));
     }
     else{
+        /*if(kReport("")){
+            char vcBuffer[100];
+            ksprintf(vcBuffer, "0x%q -> 0x%q\n", pstRunningTask->stLink.qwID, pstNextTask->stLink.qwID);
+            kRequireReport();
+            kReport("");
+            kRequireReport();
+        }*/
         kAddTaskToReadyList(pstRunningTask);
         gs_stScheduler.pstRunningTask=pstNextTask;
         kSwitchContext(&(pstRunningTask->stContext), &(pstNextTask->stContext));
@@ -451,10 +458,8 @@ BOOL kScheduleInInterupt(QWORD qwStackStartAddress){
     kUnlockForSystemData(bLockInfo);
     {
         char vcBuffer[100];
-        ksprintf(vcBuffer, "Interrupt ->0x%q, %s\n", pstNextTask->stLink.qwID, bLockInfo?"TRUE":"FALSE");
-        if(kReport(vcBuffer)){
-            kRequireReport();
-        }
+        ksprintf(vcBuffer, "Interrupt 0x%q->0x%q, %s\n", pstRunningTask->stLink.qwID, pstNextTask->stLink.qwID, bLockInfo?"TRUE":"FALSE");
+        kReport(vcBuffer);
     }
     kMemCpy(pcContextAddress, &(pstNextTask->stContext), sizeof(CONTEXT));
     gs_stScheduler.iProcessorTime=TASK_PROCESSTIME;

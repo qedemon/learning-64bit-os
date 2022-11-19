@@ -3,6 +3,7 @@
 #include "PIT.h"
 #include "string.h"
 #include "Task.h"
+#include "Synchronization.h"
 
 void kMemSet(void* pDest, BYTE bData, int iSize){
     int i;
@@ -51,15 +52,14 @@ BOOL kSetInterruptFlag(BOOL bEnableInterrupt){
     else{
         kDisableInterrupt();
     }
-    if(bEnableInterrupt){
-        if(kReport("")){
-            char vcBuffer[100];
-            ksprintf(vcBuffer, "kSetInterruptFlag = %s 0x%q\n", bEnableInterrupt?"TRUE":"FALSE", kGetRunningTask()->stLink.qwID);
+    if(kReport("")){
+        char vcBuffer[100];
+        ksprintf(vcBuffer, "kSetInterruptFlag = %s 0x%q\n", bEnableInterrupt?"TRUE":"FALSE", kGetRunningTask()->stLink.qwID);
+        kRequireReport();
+        if(kReport(""))
             kRequireReport();
-            if(kReport(vcBuffer))
-                kRequireReport();
-        }
     }
+    
     if(qwRFLAGS&0x0200){
         return TRUE;
     }

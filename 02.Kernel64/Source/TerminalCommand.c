@@ -261,7 +261,7 @@ void kTerminalCommandCreateTask(const char* pcArgument){
 void kTerminalCommandStopOtherTasks(const char* pcArgument){
     //kClearOtherTask();
     kprintf("stop interrupt\n");
-    kDisableInterrupt();
+    //kDisableInterrupt();
     kRequireReport();
 }
 
