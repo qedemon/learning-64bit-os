@@ -404,6 +404,12 @@ void kSchedule(){
     gs_stScheduler.iProcessorTime=TASK_PROCESSTIME;
     
     kUnlockForSystemData(bLockInfo);
+    {
+        char vcBuffer[100];
+        ksprintf(vcBuffer, "Unlock %s 0x%q\n", bLockInfo?"TRUE":"FALSE", kGetRunningTask()->stLink.qwID);
+        if(kReport(vcBuffer))
+            kRequireReport();
+    }
 }
 
 BOOL kScheduleInInterupt(QWORD qwStackStartAddress){
@@ -443,6 +449,13 @@ BOOL kScheduleInInterupt(QWORD qwStackStartAddress){
     }
     gs_stScheduler.pstRunningTask=pstNextTask;
     kUnlockForSystemData(bLockInfo);
+    {
+        char vcBuffer[100];
+        ksprintf(vcBuffer, "Interrupt ->0x%q, %s\n", pstNextTask->stLink.qwID, bLockInfo?"TRUE":"FALSE");
+        if(kReport(vcBuffer)){
+            kRequireReport();
+        }
+    }
     kMemCpy(pcContextAddress, &(pstNextTask->stContext), sizeof(CONTEXT));
     gs_stScheduler.iProcessorTime=TASK_PROCESSTIME;
     return TRUE;

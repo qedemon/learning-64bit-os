@@ -219,7 +219,7 @@ void kTestTask2(){
     pstRunningTask=kGetRunningTask();
     iOffset=(pstRunningTask->stLink.qwID&0xFFFFFFFF)-2;
     iOffset=TERMINAL_WIDTH*TERMINAL_HEIGHT-(iOffset%(TERMINAL_WIDTH*TERMINAL_HEIGHT))-1;
-    for(j=0; j<20000; j++){
+    while(1){
         pstScreen[iOffset].bChar=vcData[i%4];
         pstScreen[iOffset].bAttrib=iOffset%15+1;
         i++;
@@ -261,7 +261,7 @@ void kTerminalCommandCreateTask(const char* pcArgument){
 void kTerminalCommandStopOtherTasks(const char* pcArgument){
     //kClearOtherTask();
     kprintf("stop interrupt\n");
-    kSetInterruptFlag(FALSE);
+    kDisableInterrupt();
     kRequireReport();
 }
 

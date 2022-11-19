@@ -18,6 +18,6 @@ char* kConvertDayOfWeekToString(BYTE bDayOfWeek);
 QWORD kMeasureCPUSpeed();
 
 void kRequireReport();
-void kReport(const char* vcReportMessage);
+BOOL kReport(const char* vcReportMessage);
 
 #endif
