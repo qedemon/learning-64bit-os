@@ -60,8 +60,6 @@ void kCommonInterruptHandler(int iVectorNumber){
     kSendEOIToPIC(iVectorNumber-32);
 }
 
-
-
 void kTimerInterruptHandler(int iVectorNumber, QWORD qwStackStartAddress){
     static int g_iTimerInterruptCount=0;
     char vcBuffer[100];
