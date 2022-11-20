@@ -19,6 +19,7 @@ void main(){
     kprintf("%s", "GDT Initialize And Switch for IA-32e Mode...[    ]");
     kInitializeGDTTableAndTSS();    
     kLoadGDTR((QWORD) GDTR_STARTADDRESS);
+    kLoadTSSR(GDT_KERNELTSSEGMENT);
     kTerminalGetCursorPos(&wCursorX, &wCursorY);
     kTerminalSetCursorPos(45, wCursorY++);
     kprintf("Pass\n");
