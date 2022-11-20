@@ -2,6 +2,7 @@
 #include "Utility.h"
 #include "TextModeTerminal.h"
 #include "Synchronization.h"
+#include "string.h"
 
 static QWORD kCalculateDynamicMemorySize(){
     QWORD qwTotalRamSize;
@@ -69,10 +70,6 @@ void kInitializeDynamicMemory(){
     gs_stDynamicMemory.qwStartAddress=DYNAMICMEMORY_START_ADDRESS+iMetaBlockCount*DYNAMICMEMORY_MIN_SIZE;
     gs_stDynamicMemory.qwEndAddress=gs_stDynamicMemory.qwStartAddress+((QWORD)gs_stDynamicMemory.iBlockCountOfSmallestBlock)*DYNAMICMEMORY_MIN_SIZE;
 
-    kprintf("Initilaize Dynamic Memory\n");
-    kprintf("Allocating 0x%q -> 0x%q\n", gs_stDynamicMemory.qwStartAddress, gs_stDynamicMemory.qwEndAddress);
-    kprintf("Level : %d\n", gs_stDynamicMemory.iMaxLevelCount);
-    kprintf("Smallest Block Count %d\n", gs_stDynamicMemory.iBlockCountOfSmallestBlock);
 }
 
 static int kFindBlockLevelForRquiredMemorySize(QWORD qwMemorySize){
@@ -124,14 +121,17 @@ void* kAllocateDynamicMemory(QWORD qwRequiredSize){
     QWORD qwOffset;
     BYTE bLockInfo;
 
-    bLockInfo=kLockForSystemData();
-    if(qwRequiredSize>(gs_stDynamicMemory.qwEndAddress-gs_stDynamicMemory.qwStartAddress-gs_stDynamicMemory.qwUsedSize)){
-        return NULL;
-    }
     iRequiredLevel=kFindBlockLevelForRquiredMemorySize(qwRequiredSize);
     if(iRequiredLevel<0){
         return NULL;
     }
+
+    bLockInfo=kLockForSystemData();
+    if(qwRequiredSize>(gs_stDynamicMemory.qwEndAddress-gs_stDynamicMemory.qwStartAddress-gs_stDynamicMemory.qwUsedSize)){
+        kUnlockForSystemData(bLockInfo);
+        return NULL;
+    }
+
     for(i=iRequiredLevel; i<gs_stDynamicMemory.iMaxLevelCount; i++){
         if(gs_stDynamicMemory.pstBitMapOfLevel[i].qwExistBitCount>0){
             pqwBitmapData=(QWORD*) &gs_stDynamicMemory.pstBitMapOfLevel[i].pbBitmap;
@@ -146,8 +146,10 @@ void* kAllocateDynamicMemory(QWORD qwRequiredSize){
             break;
         }
     }
-    if(i==gs_stDynamicMemory.iMaxLevelCount)
+    if(i==gs_stDynamicMemory.iMaxLevelCount){
+        kUnlockForSystemData(bLockInfo);
         return NULL;
+    }
     
     iExistLevel=i;
     kSetBitMap(&gs_stDynamicMemory.pstBitMapOfLevel[iExistLevel], qwOffset, DYNAMICMEMORY_EMPTY);
@@ -198,4 +200,26 @@ BOOL kFreeDynamicMemory(void* vpMemoryAddress){
     }
     kUnlockForSystemData(bLockInfo);
     return TRUE;
+}
+
+int kGetDynamicMemoryInfo(char* vcResult){
+    static int iOffset=0;
+    static char vcTemp[200];
+    BYTE bLockInfo;
+    if(vcResult==NULL){
+        iOffset=0;
+        bLockInfo=kLockForSystemData();
+
+        iOffset+=ksprintf(&vcTemp[iOffset], "Initilaize Dynamic Memory\n");
+        iOffset+=ksprintf(&vcTemp[iOffset], "Allocating 0x%q -> 0x%q\n", gs_stDynamicMemory.qwStartAddress, gs_stDynamicMemory.qwEndAddress);
+        iOffset+=ksprintf(&vcTemp[iOffset], "Level : %d\n", gs_stDynamicMemory.iMaxLevelCount);
+        iOffset+=ksprintf(&vcTemp[iOffset], "Smallest Block Count %d\n", gs_stDynamicMemory.iBlockCountOfSmallestBlock);
+        iOffset+=ksprintf(&vcTemp[iOffset], "Used size : %d\n", gs_stDynamicMemory.qwUsedSize);
+
+        kUnlockForSystemData(bLockInfo);
+        return iOffset;
+    }
+    else{
+        return kMemCpy(vcResult, vcTemp, iOffset);
+    }
 }

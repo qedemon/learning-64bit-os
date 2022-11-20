@@ -8,6 +8,7 @@
 #include "Type.h"
 #include "Synchronization.h"
 #include "AssemblyUtility.h"
+#include "DynamicMemory.h"
 
 static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"help", "Show Help", kTerminalCommandHelp},
@@ -27,6 +28,7 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"cpuload", "Get CPU Processing Load", kTerminalCommandGetProcessorLoad},
     {"chpri", "chpri 0x30002(ID) 3(priority)", kTerminalCommandChangePriority},
     {"testfloat", "test float caculation", kTerminalCommandTestFPU},
+    {"testalloc", "test dynamic memory allocation", kTerminalCommandTestDynamicMemory},
 };
 
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** ppstTerminalCmd, int* piSpaceIndex){
@@ -410,4 +412,12 @@ void kTerminalCommandTestFPU(const char* pcArgument){
     b=1.1;
     c=(a+b);
     kprintf("0.1 + 1.1 = %f\n", VAFLOAT(c));
+}
+
+
+void kTerminalCommandTestDynamicMemory(const char* pcArgument){
+    char vcBuffer[200];
+    int iLen=kGetDynamicMemoryInfo(NULL);
+    kGetDynamicMemoryInfo(vcBuffer);
+    kprintf("%s\n", vcBuffer);
 }
