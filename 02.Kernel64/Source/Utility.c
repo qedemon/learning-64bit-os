@@ -1,6 +1,7 @@
 #include "Utility.h"
 #include "AssemblyUtility.h"
 #include "PIT.h"
+#include "Task.h"
 
 void kMemSet(void* pDest, BYTE bData, int iSize){
     int i;
@@ -107,6 +108,14 @@ QWORD kMeasureCPUSpeed(){
     }
     kSetInterruptFlag(bInterrupt);
     return qwTotalTSC/10;
+}
+
+void kSleep(QWORD millisecond){
+    QWORD qwLastTick;
+    qwLastTick=kGetTickCount();
+    while((kGetTickCount()-qwLastTick)<millisecond){
+        kSchedule();
+    }
 }
 
 #include "TextModeTerminal.h"

@@ -24,6 +24,22 @@ kOutPortByte:
     out dx, al
     pop rdx
     ret
+kInPortWord:
+    push rdx
+    mov rdx, rdi
+    mov rax, 0
+    in ax, dx
+    pop rdx
+    ret
+kOutPortWord:
+    push rdx
+    push rax
+    mov rdx, rdi
+    mov rax, rsi
+    out dx, ax
+    pop rax
+    pop rdx
+    ret
 kLoadGDTR:
     lgdt [rdi]
     ret
