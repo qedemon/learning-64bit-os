@@ -161,7 +161,7 @@ void* kAllocateDynamicMemory(QWORD qwRequiredSize){
     }
     gs_stDynamicMemory.pbAllocatedBlockListIndex[qwOffset<<iRequiredLevel]=iRequiredLevel;
     gs_stDynamicMemory.qwUsedSize+=(DYNAMICMEMORY_MIN_SIZE<<iRequiredLevel);
-    kprintf("Alloc %d block in level %d\n", qwOffset, iRequiredLevel);
+    //kprintf("Alloc %d block in level %d\n", qwOffset, iRequiredLevel);
     kUnlockForSystemData(bLockInfo);
     return (void*)(gs_stDynamicMemory.qwStartAddress+(qwOffset<<iRequiredLevel)*DYNAMICMEMORY_MIN_SIZE);
 }
@@ -180,7 +180,7 @@ BOOL kFreeDynamicMemory(void* vpMemoryAddress){
     gs_stDynamicMemory.pbAllocatedBlockListIndex[qwOffset]==0xFF;
     gs_stDynamicMemory.qwUsedSize-=(DYNAMICMEMORY_MIN_SIZE<<iLevel);
     qwOffset>>=iLevel;
-    kprintf("Free %d block in level %d\n", qwOffset, iLevel);
+    //kprintf("Free %d block in level %d\n", qwOffset, iLevel);
     for(i=iLevel; i<gs_stDynamicMemory.iMaxLevelCount; i++){
         kSetBitMap(&gs_stDynamicMemory.pstBitMapOfLevel[i], qwOffset, DYNAMICMEMORY_EXIST);
         if(qwOffset%2==0){
