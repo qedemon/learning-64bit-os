@@ -123,6 +123,7 @@ kISRDoubleFault:
     mov rsi, qword[rbp+8]
     call kCommonExceptionHandler
     KLOADCONTEXT
+    add rsp, 8
     iretq
 kISRCoprocessorSegmentOverrun:
     KSAVECONTEXT

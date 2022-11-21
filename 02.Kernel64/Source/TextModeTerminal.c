@@ -141,7 +141,7 @@ int kTerminalPrintString(WORD iCursorX, WORD iCursorY, const char* str){
 
 int kprintf(const char* pcFormatString, ...){
     int iReturn;
-    char vcBuffer[128];
+    char vcBuffer[1024];
     int iOffset;
     WORD wCursorX, wCursorY;
     va_list valist;

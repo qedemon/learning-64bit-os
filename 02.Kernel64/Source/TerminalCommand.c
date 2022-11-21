@@ -416,8 +416,13 @@ void kTerminalCommandTestFPU(const char* pcArgument){
 
 
 void kTerminalCommandTestDynamicMemory(const char* pcArgument){
-    char vcBuffer[200];
-    int iLen=kGetDynamicMemoryInfo(NULL);
-    kGetDynamicMemoryInfo(vcBuffer);
-    kprintf("%s\n", vcBuffer);
+    char vcBuffer[1024];
+    int iLen=0;
+    char* vcMemory=kAllocateDynamicMemory(1024);
+    kFreeDynamicMemory(vcMemory);
+    vcMemory=kAllocateDynamicMemory(1024*10);
+    iLen=kGetDynamicMemoryInfo(NULL, 0);
+    kGetDynamicMemoryInfo(vcBuffer, iLen<sizeof(vcBuffer)?iLen:sizeof(vcBuffer));
+    kprintf("%s", vcBuffer);
+    kprintf("Allocated at 0x%q\n", (QWORD)vcMemory);
 }
