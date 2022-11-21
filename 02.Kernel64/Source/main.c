@@ -8,6 +8,7 @@
 #include "PIT.h"
 #include "string.h"
 #include "Task.h"
+#include "DynamicMemory.h"
 
 void main(){
     WORD wCursorX, wCursorY;
@@ -57,11 +58,14 @@ void main(){
         while(1);
     }
 
+    kprintf("%s", "Initialize Dynamic Memory Blocks............[Pass]\n");
+    kInitializeDynamicMemory();
+
     /*if(!kUpdateKeyboardLeds()){
         while(1);
     }*/
     
-    kTerminalSetCursorPos(0, wCursorY);
+    //kTerminalSetCursorPos(0, wCursorY);
     kprintf("MINT64 OS Start\n");
     kCreateTask(TASK_FLAG_LOWEST|TASK_FLAG_IDLE|TASK_FLAG_SYSTEM|TASK_FLAG_THREAD, (QWORD) kIdleTask, 0, QWORD_MAX);
     kStartTerminal();

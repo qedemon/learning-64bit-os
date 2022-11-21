@@ -9,3 +9,4 @@ ImageMaker.py
 .vscode/c_cpp_properties.json
 .vscode/settings.json
 chmod.sh
+qemu-x86_64.bat
