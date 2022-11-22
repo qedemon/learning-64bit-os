@@ -66,8 +66,8 @@ typedef struct kHDDInformationStruct{
     DWORD dwTotalSectors;
     WORD vwReserved3[196];
 }HDDINFORMATION;
-#pragma pack(pop)
 
+#pragma pack(pop)
 typedef struct kHDDManagerStruct{
     BOOL bHDDDetected;
     BOOL bCanWrite;
