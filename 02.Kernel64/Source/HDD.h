@@ -84,4 +84,7 @@ BOOL kReadHDDInformation(BOOL bPrimary, BOOL bMaster, HDDINFORMATION* pstHDDInfo
 
 void kSetHDDInterrupt(BOOL bPrimary, BOOL bFlag);
 
+int kCopyHDDSerialNumber(char* vcDest);
+int kCopyHDDModelNumber(char* vcDest);
+
 #endif

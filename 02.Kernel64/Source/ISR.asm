@@ -2,7 +2,7 @@
 
 SECTION .text
 
-extern kCommonExceptionHandler,kDeviceNotAvailableHandler, kCommonInterruptHandler, kTimerInterruptHandler, kKeyboardInterruptHandler
+extern kCommonExceptionHandler,kDeviceNotAvailableHandler, kCommonInterruptHandler, kTimerInterruptHandler, kKeyboardInterruptHandler, kHDDInterruptHandler
 
 global kISRDivideZero, kISRDebug, kISRNMI, kISRBreakPoint, kISROverflow, kISRBoundRangeExceeded, kISRInvalidOpcode, kISRDeviceNotAvailable
 global kISRDoubleFault, kISRCoprocessorSegmentOverrun, kISRInvalidTSS, kISRSegmentNotPresent, kISRStackSegmentFault, kISRGeneralProtection, kISRPageFault, kISR15
@@ -301,13 +301,13 @@ kISRCoprocessor:
 kISRHDD1:
     KSAVECONTEXT
     mov rdi, 46
-    call kCommonInterruptHandler
+    call kHDDInterruptHandler
     KLOADCONTEXT
     iretq
 kISRHDD2:
     KSAVECONTEXT
     mov rdi, 47
-    call kCommonInterruptHandler
+    call kHDDInterruptHandler
     KLOADCONTEXT
     iretq
 kISRETCInterrupt:

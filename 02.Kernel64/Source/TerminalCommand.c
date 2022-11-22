@@ -9,6 +9,7 @@
 #include "Synchronization.h"
 #include "AssemblyUtility.h"
 #include "DynamicMemory.h"
+#include "HDD.h"
 
 static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"help", "Show Help", kTerminalCommandHelp},
@@ -29,6 +30,7 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"chpri", "chpri 0x30002(ID) 3(priority)", kTerminalCommandChangePriority},
     {"testfloat", "test float caculation", kTerminalCommandTestFPU},
     {"testalloc", "test dynamic memory allocation", kTerminalCommandTestDynamicMemory},
+    {"gethddinfo", "get HDD information", kTerminalCommandPrintInfo},
 };
 
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** ppstTerminalCmd, int* piSpaceIndex){
@@ -425,4 +427,15 @@ void kTerminalCommandTestDynamicMemory(const char* pcArgument){
     kGetDynamicMemoryInfo(vcBuffer, iLen<sizeof(vcBuffer)?iLen:sizeof(vcBuffer));
     kprintf("%s", vcBuffer);
     kprintf("Allocated at 0x%q\n", (QWORD)vcMemory);
+}
+
+
+void kTerminalCommandPrintInfo(const char* pcArgument){
+    char vcBuffer[100];
+    int iLen=kCopyHDDModelNumber(vcBuffer);
+    vcBuffer[iLen]=0;
+    kprintf("HDD Model No. : %s\n", vcBuffer);
+    iLen=kCopyHDDSerialNumber(vcBuffer);
+    kprintf("HDD Serial No. : %s\n", vcBuffer);
+    kprintf("size of HDDINFO %d\n", sizeof(HDDINFORMATION)/2);
 }

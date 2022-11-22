@@ -2,7 +2,7 @@
 
 SECTION .text
 
-global kInPortByte, kOutPortByte, kLoadGDTR, kLoadTSSR, kLoadIDTR
+global kInPortByte, kOutPortByte, kInPortWord, kOutPortWord, kLoadGDTR, kLoadTSSR, kLoadIDTR
 global kEnableInterrupt, kDisableInterrupt, kReadRFLAGS
 global kReadTSC
 global kGetRIPValue

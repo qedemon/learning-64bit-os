@@ -3,6 +3,7 @@
 #include "AssemblyUtility.h"
 #include "PIT.h"
 #include "Utility.h"
+#include "TextModeTerminal.h"
 
 static HDDMANAGER gs_stHDDManager;
 
@@ -14,6 +15,15 @@ BOOL kInitializeHDD(){
 
     kOutPortByte(HDD_PORT_PRIMARYBASE+HDD_PORT_INDEX_DIGITALOUTPUT, 0);
     kOutPortByte(HDD_PORT_SECONDARYBASE+HDD_PORT_INDEX_DIGITALOUTPUT, 0);
+
+    if(kReadHDDInformation(TRUE, TRUE, &gs_stHDDManager.stHDDInformation)==FALSE){
+        gs_stHDDManager.bHDDDetected=FALSE;
+        gs_stHDDManager.bCanWrite=FALSE;
+        return FALSE;
+    }
+    gs_stHDDManager.bHDDDetected=TRUE;
+    gs_stHDDManager.bCanWrite=TRUE;
+    return TRUE;
 }
 
 static BYTE kReadHDDStatus(BOOL bPrimary){
@@ -38,7 +48,7 @@ static BOOL kWaitForHDDReady(BOOL bPrimary){
     qwStartTick=kGetTickCount();
     while((kGetTickCount()-qwStartTick)<=HDD_WAITTIME){
         BYTE bHDDStatus=kReadHDDStatus(bPrimary);
-        if(HDDStatus&&HDD_STATUS_DEVICEREADY){
+        if(bHDDStatus&&HDD_STATUS_DEVICEREADY){
             return TRUE;
         }
         kSleep(1);
@@ -49,7 +59,7 @@ static BOOL kWaitForHDDReady(BOOL bPrimary){
 static BOOL kWaitForHDDInterrupt(BOOL bPrimary){
     QWORD qwTickCount;
     qwTickCount=kGetTickCount();
-    while((kGetTickCount-qwTickCount)<=HDD_WAITTIME){
+    while((kGetTickCount()-qwTickCount)<=HDD_WAITTIME){
         if(bPrimary){
             if(gs_stHDDManager.bPrimaryInterruptOccur){
                 return TRUE;
@@ -96,8 +106,14 @@ BOOL kReadHDDInformation(BOOL bPrimary, BOOL bMaster, HDDINFORMATION* pstHDDInfo
         return FALSE;
     }
     for(i=0; i<512/2; i++){
-        ((WORD*) &gs_stHDDManager.stHDDInformation)[i]=kInPortWord(wPortBase+HDD_PORT_INDEX_DATA);
+        WORD wData;
+        wData=kInPortWord(wPortBase+HDD_PORT_INDEX_DATA);
+        ((WORD*) pstHDDInformation)[i]=wData;
     }
+    kSwapByteInWord(pstHDDInformation->vwModelNumber, sizeof(pstHDDInformation->vwModelNumber)/2);
+    kSwapByteInWord(pstHDDInformation->vwSerialNumber, sizeof(pstHDDInformation->vwSerialNumber)/2);
+    kUnlockMutex(&gs_stHDDManager.stMutex);
+    return TRUE;
 }
 
 void kSetHDDInterrupt(BOOL bPrimary, BOOL bFlag){
@@ -107,4 +123,17 @@ void kSetHDDInterrupt(BOOL bPrimary, BOOL bFlag){
     else{
         gs_stHDDManager.bSecondaryInterruptOccur=bFlag;
     }
+}
+
+int kCopyHDDSerialNumber(char* vcDest){
+    if(vcDest==NULL){
+        return 0;
+    }
+    return kMemCpy(vcDest, gs_stHDDManager.stHDDInformation.vwSerialNumber, sizeof(gs_stHDDManager.stHDDInformation.vwSerialNumber));
+}
+int kCopyHDDModelNumber(char* vcDest){
+    if(vcDest==NULL){
+        return 0;
+    }
+    return kMemCpy(vcDest, gs_stHDDManager.stHDDInformation.vwModelNumber, sizeof(gs_stHDDManager.stHDDInformation.vwModelNumber));
 }

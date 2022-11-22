@@ -7,6 +7,7 @@
 #include "TextModeTerminal.h"
 #include "string.h"
 #include "Task.h"
+#include "HDD.h"
 
 void kCommonExceptionHandler(int iVectorNumber, QWORD qwErrorCode){
     char vcBuffer[]="[VEC:  ]";
@@ -82,6 +83,23 @@ void kKeyboardInterruptHandler(int iVectorNumber){
     if(kIsOutputBufferFull()){
         scanCode=kGetKeyBoardScanCode();
         kUpdateKeyBoardManagerAndPutKeyDatatToQueue(scanCode);
+    }
+
+    kSendEOIToPIC(iVectorNumber-32);
+}
+
+void kHDDInterruptHandler(int iVectorNumber){
+    static int g_iCommonInterruptCount=0;
+    char vcBuffer[100];
+    ksprintf(vcBuffer, "[INT:%d,%d]", iVectorNumber, g_iCommonInterruptCount%10);
+    kTerminalPrintString(70, 0, vcBuffer);
+    g_iCommonInterruptCount++;
+
+    if(iVectorNumber-32==14){
+        kSetHDDInterrupt(TRUE, TRUE);
+    }
+    else{
+        kSetHDDInterrupt(FALSE, TRUE);
     }
 
     kSendEOIToPIC(iVectorNumber-32);

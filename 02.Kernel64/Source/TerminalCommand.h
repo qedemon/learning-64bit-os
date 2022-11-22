@@ -39,5 +39,6 @@ void kTerminalCommandChangePriority(const char* pcArgument);
 void kTerminalCommandKillTask(const char* pcArgument);
 void kTerminalCommandTestFPU(const char* pcArgument);
 void kTerminalCommandTestDynamicMemory(const char* pcArgument);
+void kTerminalCommandPrintInfo(const char* pcArgument);
 
 #endif

@@ -9,6 +9,7 @@
 #include "string.h"
 #include "Task.h"
 #include "DynamicMemory.h"
+#include "HDD.h"
 
 void main(){
     WORD wCursorX, wCursorY;
@@ -58,8 +59,19 @@ void main(){
         while(1);
     }
 
-    kprintf("%s", "Initialize Dynamic Memory Blocks............[Pass]\n");
+    kprintf("%s", "Initialize Dynamic Memory Blocks............[     ]");
     kInitializeDynamicMemory();
+    kTerminalSetCursorPos(45, wCursorY++);
+    kprintf("Pass\n");
+
+    kprintf("%s", "Initialize HDD Driver.......................[     ]");
+    kTerminalSetCursorPos(45, wCursorY++);
+    if(kInitializeHDD()){
+        kprintf("Pass\n");
+    }
+    else{
+        kprintf("Fail\n");
+    }
 
     /*if(!kUpdateKeyboardLeds()){
         while(1);
