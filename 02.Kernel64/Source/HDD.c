@@ -261,6 +261,10 @@ void kSetHDDInterruptFlag(BOOL bPrimary, BOOL bFlag){
     }
 }
 
+BOOL kCopyHDDInformation(HDDINFORMATION* pstInformation){
+    return (kMemCpy(pstInformation, &gs_stHDDManager.stHDDInformation, sizeof(HDDINFORMATION))==sizeof(HDDINFORMATION))?TRUE:FALSE;
+}
+
 int kCopyHDDSerialNumber(char* vcDest){
     if(vcDest==NULL){
         return 0;

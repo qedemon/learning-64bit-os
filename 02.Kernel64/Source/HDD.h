@@ -87,6 +87,7 @@ void kSetHDDInterruptFlag(BOOL bPrimary, BOOL bFlag);
 int kReadHDDSector(BOOL bPrimary, BOOL bMaster, DWORD dwLBA, int iSectorCount, char* pcBuffer);
 int kWriteHDDSector(BOOL bPrimary, BOOL bMaster, DWORD dwLBA, int iSectorCount, char* pcBuffer);
 
+BOOL kCopyHDDInformation(HDDINFORMATION* pstInformation);
 int kCopyHDDSerialNumber(char* vcDest);
 int kCopyHDDModelNumber(char* vcDest);
 

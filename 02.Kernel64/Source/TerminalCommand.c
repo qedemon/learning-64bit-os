@@ -433,11 +433,17 @@ void kTerminalCommandTestDynamicMemory(const char* pcArgument){
 
 void kTerminalCommandPrintHDDInfo(const char* pcArgument){
     char vcBuffer[100];
-    int iLen=kCopyHDDModelNumber(vcBuffer);
+    HDDINFORMATION stHDDInformation;
+    kCopyHDDInformation(&stHDDInformation);
+    int iLen=kMemCpy(vcBuffer, stHDDInformation.vwModelNumber, sizeof(stHDDInformation.vwModelNumber));
     vcBuffer[iLen]=0;
     kprintf("HDD Model No. : %s\n", vcBuffer);
-    iLen=kCopyHDDSerialNumber(vcBuffer);
+    iLen=kMemCpy(vcBuffer, stHDDInformation.vwModelNumber, sizeof(stHDDInformation.vwSerialNumber));
     kprintf("HDD Serial No. : %s\n", vcBuffer);
+    kprintf("Head Count : %d\n", stHDDInformation.wNumberOfHead);
+    kprintf("Cylinder Count : %d\n", stHDDInformation.wNumberOfCylinder);
+    kprintf("Sector Count : %d\n", stHDDInformation.wNumberOfSectorPerCylinder);
+    kprintf("Total Sector : %d Sector, %dMB\n", stHDDInformation.dwTotalSectors, stHDDInformation.dwTotalSectors/2/1024);
 }
 
 MUTEX gs_testMutex;
