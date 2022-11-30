@@ -30,6 +30,7 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"chpri", "chpri 0x30002(ID) 3(priority)", kTerminalCommandChangePriority},
     {"testfloat", "test float caculation", kTerminalCommandTestFPU},
     {"testalloc", "test dynamic memory allocation", kTerminalCommandTestDynamicMemory},
+    {"testmutex", "test mutex", kTerminalCommandTestMutex},
     {"gethddinfo", "get HDD information", kTerminalCommandPrintHDDInfo},
 };
 
@@ -437,4 +438,39 @@ void kTerminalCommandPrintHDDInfo(const char* pcArgument){
     kprintf("HDD Model No. : %s\n", vcBuffer);
     iLen=kCopyHDDSerialNumber(vcBuffer);
     kprintf("HDD Serial No. : %s\n", vcBuffer);
+}
+
+MUTEX gs_testMutex;
+static volatile int gs_testInt=0;
+
+static void addTestInt(){
+    int i;
+    for(i=0; i<10; i++){
+        int j;
+        kLockMutex(&gs_testMutex);
+        for(j=0; j<10; j++){
+            kprintf("add %d\n", gs_testInt++);
+        }
+        kUnlockMutex(&gs_testMutex);
+        kSchedule();
+    }
+}
+
+static void subTestInt(){
+    int i;
+    for(i=0; i<10; i++){
+        int j;
+        kLockMutex(&gs_testMutex);
+        for(j=0; j<10; j++){
+            kprintf("sub %d\n", gs_testInt--);
+        }
+        kUnlockMutex(&gs_testMutex);
+        kSchedule();
+    }
+}
+
+void kTerminalCommandTestMutex(const char* pcArgument){
+    kInitializeMutex(&gs_testMutex);
+    kCreateTask(TASK_FLAG_LOW, (QWORD) addTestInt, 0, QWORD_MAX);
+    kCreateTask(TASK_FLAG_LOW, (QWORD) subTestInt, 0, QWORD_MAX);
 }

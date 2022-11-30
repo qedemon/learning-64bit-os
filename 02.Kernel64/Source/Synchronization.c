@@ -33,8 +33,11 @@ void kLockMutex(MUTEX* pstMutex){
     pstMutex->qwTaskID=kGetRunningTask()->stLink.qwID;
     pstMutex->dwLockCount=1;
 }
+
+#include "TextModeTerminal.h"
 void kUnlockMutex(MUTEX* pstMutex){
     if((pstMutex->bLockFlag==FALSE)||(pstMutex->qwTaskID!=kGetRunningTask()->stLink.qwID)){
+        kprintf("Unlock error\n");
         return;
     }
     if(pstMutex->dwLockCount>1){
