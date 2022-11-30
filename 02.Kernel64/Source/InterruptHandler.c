@@ -96,10 +96,10 @@ void kHDDInterruptHandler(int iVectorNumber){
     g_iCommonInterruptCount++;
 
     if(iVectorNumber-32==14){
-        kSetHDDInterrupt(TRUE, TRUE);
+        kSetHDDInterruptFlag(TRUE, TRUE);
     }
     else{
-        kSetHDDInterrupt(FALSE, TRUE);
+        kSetHDDInterruptFlag(FALSE, TRUE);
     }
 
     kSendEOIToPIC(iVectorNumber-32);

@@ -96,12 +96,12 @@ BOOL kReadHDDInformation(BOOL bPrimary, BOOL bMaster, HDDINFORMATION* pstHDDInfo
         return FALSE;
     }
     bDriveFlag=bMaster?HDD_DRIVEHEAD_LBA:(HDD_DRIVEHEAD_LBA|HDD_DRIVEHEAD_SLAVE);
-    kOutPortByte(wPortBase+HDD_PORT_INDEX_DRIVEHEADER, bDriveFlag);
+    kOutPortByte(wPortBase+HDD_PORT_INDEX_DRIVEHEAD, bDriveFlag);
     if(kWaitForHDDReady(bPrimary)==FALSE){
         kUnlockMutex(&gs_stHDDManager.stMutex);
         return FALSE;
     }
-    kSetHDDInterrupt(bPrimary, FALSE);
+    kSetHDDInterruptFlag(bPrimary, FALSE);
     kOutPortByte(wPortBase+HDD_PORT_INDEX_COMMAND, HDD_COMMAND_IDENTIFY);
     bWaitResult=kWaitForHDDInterrupt(bPrimary);
     bStatus=kReadHDDStatus(bPrimary);
@@ -120,7 +120,73 @@ BOOL kReadHDDInformation(BOOL bPrimary, BOOL bMaster, HDDINFORMATION* pstHDDInfo
     return TRUE;
 }
 
-void kSetHDDInterrupt(BOOL bPrimary, BOOL bFlag){
+int kReadHDDSector(BOOL bPrimary, BOOL bMaster, DWORD dwLBA, int iSectorCount, char* pcBuffer){
+    WORD wPortBase;
+    BYTE bDriveFlag;
+    int i;
+    long lReadCount=0;
+    if(gs_stHDDManager.bHDDDetected==FALSE){
+        return 0;
+    }
+    if((iSectorCount<=0)||(iSectorCount>256)){
+        return 0;
+    }
+    if((iSectorCount+dwLBA)>gs_stHDDManager.stHDDInformation.dwTotalSectors){
+        return 0;
+    }
+    wPortBase=bPrimary?HDD_PORT_PRIMARYBASE:HDD_PORT_SECONDARYBASE;
+    kLockMutex(&gs_stHDDManager.stMutex);
+    if(kWaitForHDDNoBusy(bPrimary)==FALSE){
+        kUnlockMutex(&gs_stHDDManager.stMutex);
+        return 0;
+    }
+    kOutPortByte(wPortBase+HDD_PORT_INDEX_SECTORCOUNT, iSectorCount);
+    kOutPortByte(wPortBase+HDD_PORT_INDEX_SECTORNUMBER, dwLBA);
+    kOutPortByte(wPortBase+HDD_PORT_INDEX_CYLINDERLSB, dwLBA>>8);
+    kOutPortByte(wPortBase+HDD_PORT_INDEX_CYLINDERMSB, dwLBA>>16);
+    bDriveFlag=bMaster?(HDD_DRIVEHEAD_LBA):(HDD_DRIVEHEAD_LBA|HDD_DRIVEHEAD_SLAVE);
+    kOutPortByte(wPortBase+HDD_PORT_INDEX_DRIVEHEAD, bDriveFlag|((dwLBA>>24)&0x0F));
+
+    if(kWaitForHDDReady(bPrimary)==FALSE){
+        kUnlockMutex(&gs_stHDDManager.stMutex);
+        return 0;
+    }
+    
+    kSetHDDInterruptFlag(bPrimary, FALSE);
+    kOutPortByte(wPortBase+HDD_PORT_INDEX_COMMAND, HDD_COMMAND_READ);
+
+    if(kWaitForHDDInterrupt(bPrimary)==FALSE){
+        kUnlockMutex(&gs_stHDDManager.stMutex);
+        return 0;
+    }
+
+    for(i=0; i<iSectorCount; i++){
+        BYTE bState;
+        int j;
+        bState=kReadHDDStatus(bPrimary);
+        if((bState&HDD_STATUS_ERR)==HDD_STATUS_ERR){
+            kUnlockMutex(&gs_stHDDManager.stMutex);
+            kprintf("Error Occured Reading HDD\n");
+            return i;
+        }
+        if((bState&HDD_STATUS_DATAREQUEST)!=HDD_STATUS_DATAREQUEST){
+            BYTE bWaitResult=kWaitForHDDInterrupt(bPrimary);
+            kSetInterruptFlag(FALSE);
+            if(bWaitResult==FALSE){
+                kprintf("Interrupt Not Occur\n");
+                kUnlockMutex(&gs_stHDDManager.stMutex);
+                return i;
+            }
+        }
+        for(j=0; j<256; j++){
+            ((WORD*)pcBuffer)[lReadCount++]=kInPortWord(wPortBase+HDD_PORT_INDEX_DATA);
+        }
+    }
+    kUnlockMutex(&gs_stHDDManager.stMutex);
+    return i;
+}
+
+void kSetHDDInterruptFlag(BOOL bPrimary, BOOL bFlag){
     if(bPrimary){
         gs_stHDDManager.bPrimaryInterruptOccur=bFlag;
     }

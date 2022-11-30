@@ -11,7 +11,7 @@
 #define HDD_PORT_INDEX_SECTORNUMBER 0x03
 #define HDD_PORT_INDEX_CYLINDERLSB 0x04
 #define HDD_PORT_INDEX_CYLINDERMSB 0x05
-#define HDD_PORT_INDEX_DRIVEHEADER 0x06
+#define HDD_PORT_INDEX_DRIVEHEAD 0x06
 #define HDD_PORT_INDEX_STATUS 0x07
 #define HDD_PORT_INDEX_COMMAND 0x07
 #define HDD_PORT_INDEX_DIGITALOUTPUT 0x206
@@ -82,7 +82,9 @@ typedef struct kHDDManagerStruct{
 BOOL kInitializeHDD();
 BOOL kReadHDDInformation(BOOL bPrimary, BOOL bMaster, HDDINFORMATION* pstHDDInformation);
 
-void kSetHDDInterrupt(BOOL bPrimary, BOOL bFlag);
+void kSetHDDInterruptFlag(BOOL bPrimary, BOOL bFlag);
+
+int kReadHDDSector(BOOL bPrimary, BOOL bMaster, DWORD dwLBA, int iSectorCount, char* pcBuffer);
 
 int kCopyHDDSerialNumber(char* vcDest);
 int kCopyHDDModelNumber(char* vcDest);
