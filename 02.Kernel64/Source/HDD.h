@@ -64,7 +64,7 @@ typedef struct kHDDInformationStruct{
     WORD vwReserved2[13];
 
     DWORD dwTotalSectors;
-    WORD vwReserved3[196];
+    WORD vwReserved3[194];
 }HDDINFORMATION;
 
 #pragma pack(pop)

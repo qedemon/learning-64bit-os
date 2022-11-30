@@ -22,12 +22,15 @@ BOOL kInitializeHDD(){
         return FALSE;
     }
     gs_stHDDManager.bHDDDetected=TRUE;
-    gs_stHDDManager.bCanWrite=TRUE;
+    if(kMemCmp(&gs_stHDDManager.stHDDInformation.vwModelNumber, "VBOX", 4)==0)
+        gs_stHDDManager.bCanWrite=TRUE;
+    else
+        gs_stHDDManager.bCanWrite=FALSE;
     return TRUE;
 }
 
 static BYTE kReadHDDStatus(BOOL bPrimary){
-    return kInPortByte(bPrimary?HDD_PORT_PRIMARYBASE:HDD_PORT_SECONDARYBASE+HDD_PORT_INDEX_STATUS);
+    return kInPortByte((bPrimary?HDD_PORT_PRIMARYBASE:HDD_PORT_SECONDARYBASE)+HDD_PORT_INDEX_STATUS);
 }
 
 static BOOL kWaitForHDDNoBusy(BOOL bPrimary){
@@ -70,6 +73,7 @@ static BOOL kWaitForHDDInterrupt(BOOL bPrimary){
                 return TRUE;
             }
         }
+        kSleep(1);
     }
     return FALSE;
 }
