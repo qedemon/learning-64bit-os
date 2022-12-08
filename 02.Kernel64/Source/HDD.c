@@ -187,12 +187,15 @@ int kWriteHDDSector(BOOL bPrimary, BOOL bMaster, DWORD dwLBA, int iSectorCount, 
     int i;
     long lReadCount=0;
     if(gs_stHDDManager.bHDDDetected==FALSE){
+        //kprintf("write error : HDD dectected\n");
         return 0;
     }
     if((iSectorCount<=0)||(iSectorCount>256)){
+        //kprintf("write error : SectorCount(%d)\n", iSectorCount);
         return 0;
     }
     if((iSectorCount+dwLBA)>gs_stHDDManager.stHDDInformation.dwTotalSectors){
+        //kprintf("write error : sector exceed %d\n", gs_stHDDManager.stHDDInformation.dwTotalSectors);
         return 0;
     }
     wPortBase=bPrimary?HDD_PORT_PRIMARYBASE:HDD_PORT_SECONDARYBASE;
@@ -213,14 +216,14 @@ int kWriteHDDSector(BOOL bPrimary, BOOL bMaster, DWORD dwLBA, int iSectorCount, 
         return 0;
     }
     
-    kOutPortByte(wPortBase+HDD_PORT_INDEX_COMMAND, HDD_COMMAND_READ);
+    kOutPortByte(wPortBase+HDD_PORT_INDEX_COMMAND, HDD_COMMAND_WRITE);
 
     while(1){
         BYTE bState;
         bState=kReadHDDStatus(bPrimary);
         if((bState&HDD_STATUS_ERR)==HDD_STATUS_ERR){
             kUnlockMutex(&gs_stHDDManager.stMutex);
-            kprintf("Error Occured Reading HDD\n");
+            kprintf("Error Occured Writing HDD\n");
             return i;
         }
         if((bState&HDD_STATUS_DATAREQUEST)==HDD_STATUS_DATAREQUEST)
@@ -237,6 +240,7 @@ int kWriteHDDSector(BOOL bPrimary, BOOL bMaster, DWORD dwLBA, int iSectorCount, 
         bState=kReadHDDStatus(bPrimary);
         if((bState&HDD_STATUS_ERR)==HDD_STATUS_ERR){
             kUnlockMutex(&gs_stHDDManager.stMutex);
+            kprintf("HDD write Error : HDD_STATUS_ERROR\n");
             return i;
         }
         if((bState&HDD_STATUS_DATAREQUEST)!=HDD_STATUS_DATAREQUEST){
@@ -244,6 +248,7 @@ int kWriteHDDSector(BOOL bPrimary, BOOL bMaster, DWORD dwLBA, int iSectorCount, 
             kSetHDDInterruptFlag(bPrimary, FALSE);
             if(bWaitResult==FALSE){
                 kUnlockMutex(&gs_stHDDManager.stMutex);
+                kprintf("HDD write Error : Wait Interrupt\n");
                 return i;
             }
         }

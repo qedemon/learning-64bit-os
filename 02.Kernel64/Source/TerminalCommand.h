@@ -39,7 +39,9 @@ void kTerminalCommandChangePriority(const char* pcArgument);
 void kTerminalCommandKillTask(const char* pcArgument);
 void kTerminalCommandTestFPU(const char* pcArgument);
 void kTerminalCommandTestDynamicMemory(const char* pcArgument);
-void kTerminalCommandPrintHDDInfo(const char* pcArgument);
 void kTerminalCommandTestMutex(const char* pcArgument);
+void kTerminalCommandPrintHDDInfo(const char* pcArgument);
+void kTerminalCommandReddHDD(const char* pcArgument);
+void kTerminalCommandWriteHDD(const char* pcArgument);
 
 #endif

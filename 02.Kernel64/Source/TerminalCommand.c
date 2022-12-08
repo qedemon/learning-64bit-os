@@ -32,6 +32,8 @@ static TERMINALCOMMANDENTRY gs_stCommandList[]={
     {"testalloc", "test dynamic memory allocation", kTerminalCommandTestDynamicMemory},
     {"testmutex", "test mutex", kTerminalCommandTestMutex},
     {"gethddinfo", "get HDD information", kTerminalCommandPrintHDDInfo},
+    {"readhdd", "readhdd 0(LBA) 2(sector)", kTerminalCommandReddHDD},
+    {"writehdd", "writehdd 0(LBA) 2(sector)", kTerminalCommandWriteHDD},
 };
 
 void kTerminalSearchCommandEntryAndSpaceIndex(const char* pcCommandBuffer, TERMINALCOMMANDENTRY** ppstTerminalCmd, int* piSpaceIndex){
@@ -479,4 +481,113 @@ void kTerminalCommandTestMutex(const char* pcArgument){
     kInitializeMutex(&gs_testMutex);
     kCreateTask(TASK_FLAG_LOW, (QWORD) addTestInt, 0, QWORD_MAX);
     kCreateTask(TASK_FLAG_LOW, (QWORD) subTestInt, 0, QWORD_MAX);
+}
+
+void kTerminalCommandReddHDD(const char* pcArgument){
+    ARGUMENTLIST stArgList;
+    char vcLBA[50], vcSectorCount[50];
+    DWORD dwLBA;
+    int iSectorCount;
+    char* pcBuffer;
+    kInitializeArgumentList(&stArgList, pcArgument);
+    if((kGetNextArgumnet(&stArgList, vcLBA)==0)||(kGetNextArgumnet(&stArgList, vcSectorCount)==0)){
+        kprintf("ex) read 0(LAB) 2(sector)\n");
+        return;
+    }
+    dwLBA=katoi(vcLBA, 10);
+    iSectorCount=katoi(vcSectorCount, 10);
+    pcBuffer=kAllocateDynamicMemory(iSectorCount*512);
+    if(kReadHDDSector(TRUE, TRUE, dwLBA, iSectorCount, pcBuffer)==iSectorCount){
+        int i;
+        BOOL bExit=FALSE;
+        kprintf("LBA [%d], [%d] Sector Read Success.\n", dwLBA, iSectorCount);
+        for(i=0; i<iSectorCount; i++){
+            int j;
+            for(j=0; j<512; j++){
+                BYTE bData;
+                if(((j%256)==0)&&(!(i==0&&j==0))){
+                    kprintf("\nPress any key to continue...('q' is exit) : ");
+                    if(kGetChar()=='q'){
+                        bExit=TRUE;
+                        break;
+                    }
+                }
+                if(j%16==0){
+                    kprintf("\n[LBA:%d, Offset:%d]\t| ", dwLBA+i, j);
+                }
+                bData=pcBuffer[i*512+i]&0xFF;
+                if(bData<16){
+                    kprintf("0");
+                }
+                kprintf("%x", bData);
+            }
+            if(bExit==TRUE){
+                break;
+            }
+            kprintf("\n");
+        }
+    }
+    else{
+        kprintf("HDD read failed\n");
+    }
+    kFreeDynamicMemory(pcBuffer);
+}
+
+void kTerminalCommandWriteHDD(const char* pcArgument){
+    ARGUMENTLIST stArgList;
+    char vcLBA[50], vcSectorCount[50];
+    DWORD dwLBA;
+    int iSectorCount, i;
+    char* pcBuffer;
+    int iWriteResult;
+    static DWORD s_dwWriteCount=0;
+    kInitializeArgumentList(&stArgList, pcArgument);
+    if((kGetNextArgumnet(&stArgList, vcLBA)==0)||(kGetNextArgumnet(&stArgList, vcSectorCount)==0)){
+        kprintf("ex) write 0(LAB) 2(sector)\n");
+        return;
+    }
+    dwLBA=katoi(vcLBA, 10);
+    iSectorCount=katoi(vcSectorCount, 10);
+    s_dwWriteCount++;
+    pcBuffer=kAllocateDynamicMemory(iSectorCount*512);
+    for(i=0; i<iSectorCount; i++){
+        int j;
+        for(j=0; j<512; j+=8){
+            *((DWORD*)&(pcBuffer[i*512+j]))=dwLBA+i;
+            *((DWORD*)&(pcBuffer[i*512+j+4]))=s_dwWriteCount;
+        }
+    }
+    if((iWriteResult=kWriteHDDSector(TRUE, TRUE, dwLBA, iSectorCount, pcBuffer))==iSectorCount){
+        BOOL bExit=FALSE;
+        kprintf("LBA [%d], [%d] Sector Write Success.\n", dwLBA, iSectorCount);
+        for(i=0; i<iSectorCount; i++){
+            int j;
+            for(j=0; j<512; j++){
+                BYTE bData;
+                if(((j%256)==0)&&(!(i==0&&j==0))){
+                    kprintf("\nPress any key to continue...('q' is exit) : ");
+                    if(kGetChar()=='q'){
+                        bExit=TRUE;
+                        break;
+                    }
+                }
+                if(j%16==0){
+                    kprintf("\n[LBA:%d, Offset:%d]\t| ", dwLBA+i, j);
+                }
+                bData=pcBuffer[i*512+j]&0xFF;
+                if(bData<16){
+                    kprintf("0");
+                }
+                kprintf("%x", bData);
+            }
+            if(bExit==TRUE){
+                break;
+            }
+            kprintf("\n");
+        }
+    }
+    else{
+        kprintf("HDD write failed %d\n", iWriteResult);
+    }
+    kFreeDynamicMemory(pcBuffer);
 }
