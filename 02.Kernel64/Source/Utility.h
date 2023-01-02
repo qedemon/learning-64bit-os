@@ -20,4 +20,6 @@ QWORD kMeasureCPUSpeed();
 void kRequireReport();
 void kReport(const char* vcReportMessage);
 
+void kSleep(QWORD millisecond);
+
 #endif
