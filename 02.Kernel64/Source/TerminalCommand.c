@@ -497,6 +497,10 @@ void kTerminalCommandReddHDD(const char* pcArgument){
     dwLBA=katoi(vcLBA, 10);
     iSectorCount=katoi(vcSectorCount, 10);
     pcBuffer=kAllocateDynamicMemory(iSectorCount*512);
+    int j;
+    for(j=0; j<512; j++){
+        pcBuffer[j]=0;
+    }
     if(kReadHDDSector(TRUE, TRUE, dwLBA, iSectorCount, pcBuffer)==iSectorCount){
         int i;
         BOOL bExit=FALSE;
@@ -515,7 +519,7 @@ void kTerminalCommandReddHDD(const char* pcArgument){
                 if(j%16==0){
                     kprintf("\n[LBA:%d, Offset:%d]\t| ", dwLBA+i, j);
                 }
-                bData=pcBuffer[i*512+i]&0xFF;
+                bData=pcBuffer[i*512+j]&0xFF;
                 if(bData<16){
                     kprintf("0");
                 }
@@ -559,7 +563,7 @@ void kTerminalCommandWriteHDD(const char* pcArgument){
     }
     if((iWriteResult=kWriteHDDSector(TRUE, TRUE, dwLBA, iSectorCount, pcBuffer))==iSectorCount){
         BOOL bExit=FALSE;
-        kprintf("LBA [%d], [%d] Sector Write Success.\n", dwLBA, iSectorCount);
+        kprintf("LBA [%d], [%d] Sector Write Success.\n", dwLBA, iWriteResult);
         for(i=0; i<iSectorCount; i++){
             int j;
             for(j=0; j<512; j++){

@@ -166,7 +166,7 @@ int kReadHDDSector(BOOL bPrimary, BOOL bMaster, DWORD dwLBA, int iSectorCount, c
         }
         if((bState&HDD_STATUS_DATAREQUEST)!=HDD_STATUS_DATAREQUEST){
             BYTE bWaitResult=kWaitForHDDInterrupt(bPrimary);
-            kSetInterruptFlag(FALSE);
+            kSetHDDInterruptFlag(bPrimary, FALSE);
             if(bWaitResult==FALSE){
                 kprintf("Interrupt Not Occur\n");
                 kUnlockMutex(&gs_stHDDManager.stMutex);
