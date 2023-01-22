@@ -48,3 +48,40 @@ BOOL kMount(){
     kUnlockMutex(&gs_stFileManager.stMutex);
     return TRUE;
 }
+
+BOOL kFormat(){
+    HDDINFORMATION* pstHDD;
+    MBR* pstMBR;
+    DWORD dwTotalSectorCount, dwRemainSectorCount;
+    DWORD dwMaxClusterCount, dwClusterCount;
+    DWORD dwClusterLinkSectorCount;
+    DWORD i;
+
+    kLock(&gs_stFileManager.stMutex);
+    pstHDD=(HDDINFORMATION*)gs_vbTempBuffer;
+    if(gs_pfReadHDDInformation(TRUE, TRUE, pstHDD)==FALSE){
+        kUnlockMutex(&gs_stFileManager.stMutex);
+        return FALSE;
+    }
+    dwTotalSectorCount=pstHDD->dwTotalSectors;
+    dwMaxClusterCount=dwTotalSectorCount/FILESYSTEM_SECTORPERCLUSTER;
+    dwClusterLinkSectorCount=(dwMaxClusterCount+127)/128;
+    dwRemainSectorCount=dwTotalSectorCount-dwClusterLinkSectorCount-1;
+    dwClusterCount=dwRemainSectorCount/FILESYSTEM_SECTORPERCLUSTER;
+
+    if(gs_pfReadHDDSector(TRUE, TRUE, 0, 1, gs_vbTempBuffer)==FALSE){
+        kUnlockMutex(&gs_stFileManager.stMutex);
+        return FALSE;
+    }
+    pstMBR=(MBR*)gs_vbTempBuffer;
+    kMemSet(pstMBR->vstPartition, 0, sizeof(pstMBR->vstPartition));
+    pstMBR->dwSignature=FILESYSTEM_SIGNATURE;
+    pstMBR->dwReservedSectorCount=0;
+    pstMBR->dwClusterLinkSectorCount=dwClusterLinkSectorCount;
+    pstMBR->dwTotalCluasterCount=dwClusterCount;
+
+    if(gs_pfWriteHDDSector(TRUE, TRUE, 0, 1, pstMBR)==FALSE){
+        kUnlockMutex(&gs_stFileManager.stMutex);
+        return FALSE;
+    }
+}

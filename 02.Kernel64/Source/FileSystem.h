@@ -8,6 +8,9 @@
 #define FILESYSTEM_SIGNATURE 0x7E38CF10
 #define FILESYSTEM_SECTORPERCLUSTER 8
 
+#define FILESYSTEM_LASTCLUSTER 0xFFFFFFFF
+#define FILESYSTEM_FREECLUSTER 0x00
+
 #pragma pack(push, 1)
 
 typedef struct kPartitionStruct{
@@ -62,5 +65,6 @@ typedef int (*fWriteHDDSector)(BOOL bPrimary, BOOL bMaster, DWORD dwLBA, int iSe
 
 BOOL kInitializeFileSystem();
 BOOL kMount();
+BOOL kFormat();
 
 #endif
